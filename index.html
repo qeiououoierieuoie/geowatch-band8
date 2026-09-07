@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoWatch - Xiaomi Smart Band 8 Active</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Header -->
+    <header class="main-header">
+      <div class="brand">
+        <span class="logo-icon">🌍</span>
+        <div>
+          <h1>GeoWatch Studio</h1>
+          <p class="subtitle">Xiaomi Smart Band 8 Active • Live Weather, AQI & Earthquake Monitor</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge">1.47" TFT (172 × 320 px)</span>
+        <span class="badge badge-online">● Live API Connected</span>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+      
+      <!-- Band Preview Column -->
+      <div class="preview-section">
+        <div class="section-title">
+          <h3>Smart Band 8 Active Simulator</h3>
+          <div class="scale-controls">
+            <button class="scale-btn" data-scale="1">1x (172px)</button>
+            <button class="scale-btn active" data-scale="1.5">1.5x</button>
+            <button class="scale-btn" data-scale="2">2x HD</button>
+          </div>
+        </div>
+
+        <!-- Band Physical Mockup -->
+        <div class="band-frame-wrapper" id="bandFrameWrapper">
+          <div class="band-strap band-strap-top"></div>
+          <div class="band-case">
+            <div class="band-screen" id="bandScreen">
+              
+              <!-- Screen Content matching the user mockup -->
+              <div class="geowatch-content" id="geowatchContent">
+                
+                <!-- Digital Clock & Date Bar -->
+                <div class="gw-clock-bar">
+                  <div class="gw-digital-time" id="dispClock">10:08</div>
+                  <div class="gw-date" id="dispDate">SEL, 8 SEP</div>
+                </div>
+
+                <!-- Header / Title -->
+                <div class="gw-row gw-header">
+                  <span class="gw-icon">🌍</span>
+                  <span class="gw-title">GEOWATCH</span>
+                </div>
+
+                <!-- Location & Coordinates -->
+                <div class="gw-location-block">
+                  <div class="gw-row gw-city-row">
+                    <span class="gw-icon">📍</span>
+                    <span class="gw-city-val" id="dispCity">Palembang, ID</span>
+                  </div>
+                  <div class="gw-coords-sub" id="dispCoords">-2.99, 104.76</div>
+                </div>
+
+                <!-- Weather Section -->
+                <div class="gw-section">
+                  <div class="gw-row gw-sec-head">
+                    <span class="gw-icon">🌤️</span>
+                    <span class="gw-sec-title">WEATHER</span>
+                  </div>
+                  <div class="gw-data-group">
+                    <div class="gw-item">
+                      <span class="gw-label">Temperature:</span>
+                      <span class="gw-val" id="dispTemp">29.4 °C</span>
+                    </div>
+                    <div class="gw-item">
+                      <span class="gw-label">Humidity:</span>
+                      <span class="gw-val" id="dispHum">74%</span>
+                    </div>
+                    <div class="gw-item">
+                      <span class="gw-label">Wind:</span>
+                      <span class="gw-val" id="dispWind">8.2 km/h</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Air Quality Section -->
+                <div class="gw-section">
+                  <div class="gw-row gw-sec-head">
+                    <span class="gw-icon">🌫️</span>
+                    <span class="gw-sec-title">AIR QUALITY</span>
+                  </div>
+                  <div class="gw-data-group">
+                    <div class="gw-item">
+                      <span class="gw-label">AQI:</span>
+                      <span class="gw-val aqi-val" id="dispAqi">42</span>
+                    </div>
+                    <div class="gw-item">
+                      <span class="gw-label">PM2.5:</span>
+                      <span class="gw-val" id="dispPm25">18.4 µg/m³</span>
+                    </div>
+                    <div class="gw-item">
+                      <span class="gw-label">PM10:</span>
+                      <span class="gw-val" id="dispPm10">31.2 µg/m³</span>
+                    </div>
+                    <div class="gw-item">
+                      <span class="gw-label">UV:</span>
+                      <span class="gw-val" id="dispUv">6</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Nearest Earthquakes Section -->
+                <div class="gw-section">
+                  <div class="gw-row gw-sec-head">
+                    <span class="gw-icon">🌋</span>
+                    <span class="gw-sec-title">NEAREST EARTHQUAKES</span>
+                  </div>
+                  <div class="gw-eq-list" id="dispEqList">
+                    <!-- Dynamic Earthquake Items -->
+                    <div class="gw-eq-item">
+                      <div class="gw-eq-mag">1. M 4.8</div>
+                      <div class="gw-eq-loc">Indonesia</div>
+                      <div class="gw-eq-dist">Distance: 423 km</div>
+                    </div>
+                    <div class="gw-eq-item">
+                      <div class="gw-eq-mag">2. M 4.3</div>
+                      <div class="gw-eq-loc">Indonesia</div>
+                      <div class="gw-eq-dist">Distance: 587 km</div>
+                    </div>
+                    <div class="gw-eq-item">
+                      <div class="gw-eq-mag">3. M 5.1</div>
+                      <div class="gw-eq-loc">Philippines</div>
+                      <div class="gw-eq-dist">Distance: 821 km</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <div class="band-strap band-strap-bottom"></div>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn btn-primary" id="btnExportWallpaper">
+            🖼️ Download Watchface Wallpaper (172x320)
+          </button>
+        </div>
+      </div>
+
+      <!-- Controls & Tools Column -->
+      <div class="controls-section">
+        
+        <!-- Location Settings Card -->
+        <div class="card">
+          <div class="card-header">
+            <h3>📍 Pengaturan Lokasi</h3>
+            <button class="btn-sm" id="btnGps">📍 Gunakan GPS HP/Browser</button>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Latitude:</label>
+                <input type="number" step="0.01" id="inputLat" value="-2.99" />
+              </div>
+              <div class="form-group">
+                <label>Longitude:</label>
+                <input type="number" step="0.01" id="inputLon" value="104.76" />
+              </div>
+            </div>
+            <div class="preset-locations">
+              <span class="label">Preset:</span>
+              <button class="preset-btn" data-lat="-2.99" data-lon="104.76">Palembang</button>
+              <button class="preset-btn" data-lat="-6.20" data-lon="106.84">Jakarta</button>
+              <button class="preset-btn" data-lat="-7.79" data-lon="110.36">Yogyakarta</button>
+              <button class="preset-btn" data-lat="-8.40" data-lon="115.18">Bali</button>
+              <button class="preset-btn" data-lat="-0.95" data-lon="100.35">Padang</button>
+            </div>
+            <button class="btn btn-secondary w-100" id="btnRefresh">🔄 Perbarui Data Realtime</button>
+          </div>
+        </div>
+
+        <!-- Push Notification Bridge Card -->
+        <div class="card">
+          <div class="card-header">
+            <h3>📲 Push Alert Realtime ke Smart Band 8 Active</h3>
+            <span class="status-indicator">Siap Kirim</span>
+          </div>
+          <div class="card-body">
+            <p class="desc">
+              Notifikasi ini akan dikirim ke aplikasi <strong>NTFY</strong> di Android/iPhone Anda, lalu otomatis diteruskan dan <strong>bergetar di Smart Band 8 Active</strong> melalui Mi Fitness!
+            </p>
+            
+            <div class="form-group">
+              <label>Topic NTFY (Bebas / Buat sendiri):</label>
+              <input type="text" id="inputNtfyTopic" value="geowatch_band8_active" placeholder="contoh: geowatch_anda" />
+            </div>
+
+            <div class="button-group">
+              <button class="btn btn-accent" id="btnSendNtfy">🚀 Kirim Test Push ke Smart Band</button>
+              <button class="btn btn-outline" id="btnCopyText">📋 Salin Teks Notifikasi</button>
+            </div>
+
+            <div class="alert-box" id="statusAlert" style="display: none;"></div>
+          </div>
+        </div>
+
+        <!-- Step-by-Step Guide Card -->
+        <div class="card guide-card">
+          <div class="card-header">
+            <h3>📖 Cara Pasang di Smart Band 8 Active</h3>
+          </div>
+          <div class="card-body">
+            <ol class="guide-steps">
+              <li>
+                <strong>Metode 1 (Wallpaper Watchface):</strong>
+                Klik tombol <em>"Download Watchface Wallpaper"</em> &rarr; Buka aplikasi <strong>Mi Fitness</strong> di HP &rarr; Masuk ke <em>Device</em> &rarr; <em>Watch faces</em> &rarr; <em>Custom photo / Wallpaper</em> &rarr; Pilih gambar yang sudah di-download.
+              </li>
+              <li>
+                <strong>Metode 2 (Push Alert Getar Realtime):</strong>
+                Install aplikasi <strong>NTFY</strong> dari Play Store / App Store &rarr; Subscribe ke topic: <code id="guideTopic">geowatch_band8_active</code> &rarr; Di <strong>Mi Fitness</strong>, pastikan izin <em>App Alerts / Notifikasi</em> untuk NTFY sudah diaktifkan &rarr; Band akan bergetar dan menampilkan info cuaca & gempa secara realtime!
+              </li>
+            </ol>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Hidden Canvas for high-res 172x320 PNG generation -->
+    <canvas id="exportCanvas" width="172" height="320" style="display: none;"></canvas>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
