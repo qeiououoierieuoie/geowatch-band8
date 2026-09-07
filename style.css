@@ -189,161 +189,375 @@ body {
   display: none; /* Chrome/Safari */
 }
 
-/* GeoWatch Screen Content (Pixel-perfect recreation) */
-.geowatch-content {
-  padding: 10px 10px 20px;
-  color: #f3f4f6;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  user-select: none;
+/* Theme Selector Bar */
+.theme-selector-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px;
 }
 
-/* Digital Clock Bar */
-.gw-clock-bar {
+.theme-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.theme-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.theme-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.theme-btn.active {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #ffffff;
+  border-color: #60a5fa;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+}
+
+/* Screen Graphic Themes */
+.band-screen.theme-cyber-hud {
+  background: radial-gradient(circle at 50% 10%, #111d33 0%, #050811 100%);
+}
+
+.band-screen.theme-satellite {
+  background: radial-gradient(circle at 50% 0%, #0c2b4e 0%, #020611 90%);
+}
+
+.band-screen.theme-seismic {
+  background: radial-gradient(circle at 50% 100%, #2e0808 0%, #090204 90%);
+}
+
+.band-screen.theme-oled-glass {
+  background: #000000;
+}
+
+/* Background Graphic Overlays */
+.screen-bg-graphic {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.15;
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, #38bdf8 1px, transparent 1px),
+    linear-gradient(to bottom, #38bdf8 1px, transparent 1px);
+}
+
+/* Rich GeoWatch UI Components */
+.geowatch-content {
+  position: relative;
+  z-index: 2;
+  padding: 10px 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Top Bar */
+.gw-top-bar {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gw-clock-group {
+  display: flex;
   align-items: baseline;
-  margin-bottom: 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #222d3d;
+  gap: 6px;
 }
 
 .gw-digital-time {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.5px;
-  line-height: 1;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
 .gw-date {
-  font-size: 9px;
-  font-weight: 600;
-  color: #60a5fa;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  font-size: 8px;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.4px;
 }
 
-.gw-row {
+.gw-status-icons {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 
-.gw-icon {
-  font-size: 11px;
-  line-height: 1;
+.pulse-dot {
+  width: 5px;
+  height: 5px;
+  background: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #34d399;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.live-tag {
+  font-size: 7px;
+  font-weight: 800;
+  color: #34d399;
+}
+
+/* Cards (Glassmorphism & Tactical HUD) */
+.gw-card {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 6px 7px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Header Card */
+.gw-header-card {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.4), rgba(15, 23, 42, 0.6));
+  border-color: rgba(96, 165, 250, 0.3);
 }
 
 .gw-header {
-  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gw-globe-anim {
+  font-size: 11px;
 }
 
 .gw-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
   color: #ffffff;
 }
 
-/* Location Block */
-.gw-location-block {
-  margin-bottom: 10px;
+.gw-chip-tag {
+  font-size: 6.5px;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-weight: 700;
+  margin-left: auto;
 }
 
-.gw-city-row {
-  margin-bottom: 1px;
+.gw-city-line {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 2px;
 }
 
 .gw-city-val {
-  font-size: 10.5px;
-  font-weight: 600;
-  color: #f3f4f6;
+  font-size: 9px;
+  font-weight: 700;
+  color: #f1f5f9;
 }
 
 .gw-coords-sub {
-  font-size: 9px;
-  color: #9ca3af;
+  font-size: 7.5px;
+  color: #94a3b8;
   font-family: 'JetBrains Mono', monospace;
-  padding-left: 17px;
+  margin-left: auto;
 }
 
-.gw-coords {
-  margin-bottom: 12px;
-}
-
-.gw-coords-val {
-  font-size: 10.5px;
-  color: #d1d5db;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-/* Sections */
-.gw-section {
-  margin-bottom: 12px;
-}
-
-.gw-sec-head {
-  margin-bottom: 3px;
+/* Weather Card */
+.gw-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
 }
 
 .gw-sec-title {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 8px;
+  font-weight: 800;
   letter-spacing: 0.4px;
-  color: #e5e7eb;
+  color: #94a3b8;
 }
 
-.gw-data-group {
-  padding-left: 2px;
+.gw-badge-temp {
+  font-size: 8px;
+  font-weight: 800;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+  padding: 1px 4px;
+  border-radius: 3px;
 }
 
-.gw-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9.5px;
-  line-height: 1.35;
-  color: #cbd5e1;
+.gw-data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  border-radius: 5px;
 }
 
-.gw-label {
-  color: #9ca3af;
-}
-
-.gw-val {
-  color: #f9fafb;
-  font-weight: 500;
-}
-
-.aqi-val {
-  color: #4ade80;
-  font-weight: 700;
-}
-
-/* Earthquakes */
-.gw-eq-list {
-  padding-left: 2px;
+.gw-metric {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  align-items: center;
+  text-align: center;
 }
 
-.gw-eq-item {
-  font-size: 9px;
-  line-height: 1.28;
+.gw-m-lbl {
+  font-size: 6.5px;
+  color: #64748b;
+  text-transform: uppercase;
 }
 
-.gw-eq-mag {
+.gw-m-val {
+  font-size: 8px;
   font-weight: 700;
+  color: #f8fafc;
+  margin-top: 1px;
+}
+
+/* Air Quality Card */
+.gw-aqi-chip {
+  font-size: 7px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(248, 113, 113, 0.2);
   color: #f87171;
 }
 
-.gw-eq-loc {
-  color: #d1d5db;
+.gw-aqi-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.gw-aqi-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 800;
+  color: #f87171;
+  line-height: 1;
+}
+
+.gw-aqi-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: right;
+}
+
+.gw-sub-item {
+  font-size: 7px;
+  color: #94a3b8;
+}
+
+.gw-sub-item b {
+  color: #f1f5f9;
+}
+
+/* Gauge Progress Track */
+.gw-gauge-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.gw-gauge-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #4ade80, #facc15, #f87171);
+  transition: width 0.4s ease;
+}
+
+/* Seismic Card */
+.gw-seismic-card {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.gw-seismic-pulse {
+  font-size: 7px;
+  font-weight: 800;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.gw-eq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gw-eq-item {
+  background: rgba(0, 0, 0, 0.25);
+  padding: 3px 5px;
+  border-radius: 4px;
+  border-left: 2px solid #ef4444;
+}
+
+.gw-eq-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gw-eq-mag {
+  font-size: 8px;
+  font-weight: 800;
+  color: #f87171;
 }
 
 .gw-eq-dist {
-  color: #9ca3af;
+  font-size: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #94a3b8;
+}
+
+.gw-eq-loc {
+  font-size: 7.5px;
+  color: #cbd5e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
 }
 
 /* Action Bar below preview */

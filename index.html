@@ -35,9 +35,20 @@
         <div class="section-title">
           <h3>Smart Band 8 Active Simulator</h3>
           <div class="scale-controls">
-            <button class="scale-btn" data-scale="1">1x (172px)</button>
+            <button class="scale-btn" data-scale="1">1x</button>
             <button class="scale-btn active" data-scale="1.5">1.5x</button>
             <button class="scale-btn" data-scale="2">2x HD</button>
+          </div>
+        </div>
+
+        <!-- Visual Theme Switcher -->
+        <div class="theme-selector-bar">
+          <span class="theme-label">🎨 Gaya Visual:</span>
+          <div class="theme-buttons">
+            <button class="theme-btn active" data-theme="cyber-hud">🛡️ Cyber HUD</button>
+            <button class="theme-btn" data-theme="satellite">🛰️ Satellite Earth</button>
+            <button class="theme-btn" data-theme="seismic">⚡ Seismic Radar</button>
+            <button class="theme-btn" data-theme="oled-glass">💎 OLED Glass</button>
           </div>
         </div>
 
@@ -45,102 +56,96 @@
         <div class="band-frame-wrapper" id="bandFrameWrapper">
           <div class="band-strap band-strap-top"></div>
           <div class="band-case">
-            <div class="band-screen" id="bandScreen">
+            <div class="band-screen theme-cyber-hud" id="bandScreen">
               
-              <!-- Screen Content matching the user mockup -->
+              <!-- Screen Visual Background Overlay -->
+              <div class="screen-bg-graphic" id="screenBgGraphic"></div>
+
+              <!-- Screen Content matching rich watchface -->
               <div class="geowatch-content" id="geowatchContent">
                 
-                <!-- Digital Clock & Date Bar -->
-                <div class="gw-clock-bar">
-                  <div class="gw-digital-time" id="dispClock">10:08</div>
-                  <div class="gw-date" id="dispDate">SEL, 8 SEP</div>
+                <!-- Digital Clock & Status Bar -->
+                <div class="gw-top-bar">
+                  <div class="gw-clock-group">
+                    <div class="gw-digital-time" id="dispClock">01:42</div>
+                    <div class="gw-date" id="dispDate">SEL, 8 SEP</div>
+                  </div>
+                  <div class="gw-status-icons">
+                    <span class="pulse-dot"></span>
+                    <span class="live-tag">LIVE</span>
+                  </div>
                 </div>
 
-                <!-- Header / Title -->
-                <div class="gw-row gw-header">
-                  <span class="gw-icon">🌍</span>
-                  <span class="gw-title">GEOWATCH</span>
-                </div>
-
-                <!-- Location & Coordinates -->
-                <div class="gw-location-block">
-                  <div class="gw-row gw-city-row">
+                <!-- Header / Title Card -->
+                <div class="gw-card gw-header-card">
+                  <div class="gw-row gw-header">
+                    <span class="gw-globe-anim">🌍</span>
+                    <span class="gw-title">GEOWATCH</span>
+                    <span class="gw-chip-tag">HUD v2</span>
+                  </div>
+                  <div class="gw-city-line">
                     <span class="gw-icon">📍</span>
-                    <span class="gw-city-val" id="dispCity">Palembang, ID</span>
-                  </div>
-                  <div class="gw-coords-sub" id="dispCoords">-2.99, 104.76</div>
-                </div>
-
-                <!-- Weather Section -->
-                <div class="gw-section">
-                  <div class="gw-row gw-sec-head">
-                    <span class="gw-icon">🌤️</span>
-                    <span class="gw-sec-title">WEATHER</span>
-                  </div>
-                  <div class="gw-data-group">
-                    <div class="gw-item">
-                      <span class="gw-label">Temperature:</span>
-                      <span class="gw-val" id="dispTemp">29.4 °C</span>
-                    </div>
-                    <div class="gw-item">
-                      <span class="gw-label">Humidity:</span>
-                      <span class="gw-val" id="dispHum">74%</span>
-                    </div>
-                    <div class="gw-item">
-                      <span class="gw-label">Wind:</span>
-                      <span class="gw-val" id="dispWind">8.2 km/h</span>
-                    </div>
+                    <span class="gw-city-val" id="dispCity">Padang, ID</span>
+                    <span class="gw-coords-sub" id="dispCoords">-0.95, 100.35</span>
                   </div>
                 </div>
 
-                <!-- Air Quality Section -->
-                <div class="gw-section">
-                  <div class="gw-row gw-sec-head">
-                    <span class="gw-icon">🌫️</span>
-                    <span class="gw-sec-title">AIR QUALITY</span>
+                <!-- Weather Card -->
+                <div class="gw-card gw-weather-card">
+                  <div class="gw-card-header">
+                    <span class="gw-sec-title">🌤️ WEATHER OVERVIEW</span>
+                    <span class="gw-badge-temp" id="dispTempBadge">24.7 °C</span>
                   </div>
-                  <div class="gw-data-group">
-                    <div class="gw-item">
-                      <span class="gw-label">AQI:</span>
-                      <span class="gw-val aqi-val" id="dispAqi">42</span>
+                  <div class="gw-data-grid">
+                    <div class="gw-metric">
+                      <span class="gw-m-lbl">Suhu</span>
+                      <span class="gw-m-val" id="dispTemp">24.7 °C</span>
                     </div>
-                    <div class="gw-item">
-                      <span class="gw-label">PM2.5:</span>
-                      <span class="gw-val" id="dispPm25">18.4 µg/m³</span>
+                    <div class="gw-metric">
+                      <span class="gw-m-lbl">Lembap</span>
+                      <span class="gw-m-val" id="dispHum">94%</span>
                     </div>
-                    <div class="gw-item">
-                      <span class="gw-label">PM10:</span>
-                      <span class="gw-val" id="dispPm10">31.2 µg/m³</span>
-                    </div>
-                    <div class="gw-item">
-                      <span class="gw-label">UV:</span>
-                      <span class="gw-val" id="dispUv">6</span>
+                    <div class="gw-metric">
+                      <span class="gw-m-lbl">Angin</span>
+                      <span class="gw-m-val" id="dispWind">1.5 km/h</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Nearest Earthquakes Section -->
-                <div class="gw-section">
-                  <div class="gw-row gw-sec-head">
-                    <span class="gw-icon">🌋</span>
-                    <span class="gw-sec-title">NEAREST EARTHQUAKES</span>
+                <!-- Air Quality Card with Gauge Bar -->
+                <div class="gw-card gw-aqi-card">
+                  <div class="gw-card-header">
+                    <span class="gw-sec-title">🌫️ AIR QUALITY (AQI)</span>
+                    <span class="gw-aqi-chip" id="dispAqiStatus">SEDANG</span>
+                  </div>
+                  <div class="gw-aqi-main">
+                    <div class="gw-aqi-num" id="dispAqi">150</div>
+                    <div class="gw-aqi-details">
+                      <div class="gw-sub-item"><span>PM2.5:</span> <b id="dispPm25">26.4</b></div>
+                      <div class="gw-sub-item"><span>PM10:</span> <b id="dispPm10">27.8</b></div>
+                      <div class="gw-sub-item"><span>UV:</span> <b id="dispUv">0</b></div>
+                    </div>
+                  </div>
+                  <!-- Visual Progress Gauge -->
+                  <div class="gw-gauge-track">
+                    <div class="gw-gauge-fill" id="dispAqiGauge" style="width: 50%;"></div>
+                  </div>
+                </div>
+
+                <!-- Nearest Earthquakes Card with Seismic Accent -->
+                <div class="gw-card gw-seismic-card">
+                  <div class="gw-card-header">
+                    <span class="gw-sec-title">🌋 SEISMIC ALERTS</span>
+                    <span class="gw-seismic-pulse">⚡ BMKG</span>
                   </div>
                   <div class="gw-eq-list" id="dispEqList">
                     <!-- Dynamic Earthquake Items -->
                     <div class="gw-eq-item">
-                      <div class="gw-eq-mag">1. M 4.8</div>
-                      <div class="gw-eq-loc">Indonesia</div>
-                      <div class="gw-eq-dist">Distance: 423 km</div>
-                    </div>
-                    <div class="gw-eq-item">
-                      <div class="gw-eq-mag">2. M 4.3</div>
-                      <div class="gw-eq-loc">Indonesia</div>
-                      <div class="gw-eq-dist">Distance: 587 km</div>
-                    </div>
-                    <div class="gw-eq-item">
-                      <div class="gw-eq-mag">3. M 5.1</div>
-                      <div class="gw-eq-loc">Philippines</div>
-                      <div class="gw-eq-dist">Distance: 821 km</div>
+                      <div class="gw-eq-row-top">
+                        <span class="gw-eq-mag">1. M 4.4</span>
+                        <span class="gw-eq-dist">1673 km</span>
+                      </div>
+                      <div class="gw-eq-loc">Dampit, Indonesia</div>
                     </div>
                   </div>
                 </div>

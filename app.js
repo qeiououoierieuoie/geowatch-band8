@@ -5,19 +5,26 @@ let currentCityName = "Palembang, Indonesia";
 let currentWeatherData = null;
 let currentEarthquakes = [];
 
+// Selected Theme
+let currentTheme = 'cyber-hud';
+
 // DOM Elements
 const dispClock = document.getElementById('dispClock');
 const dispDate = document.getElementById('dispDate');
 const dispCity = document.getElementById('dispCity');
 const dispCoords = document.getElementById('dispCoords');
 const dispTemp = document.getElementById('dispTemp');
+const dispTempBadge = document.getElementById('dispTempBadge');
 const dispHum = document.getElementById('dispHum');
 const dispWind = document.getElementById('dispWind');
 const dispAqi = document.getElementById('dispAqi');
+const dispAqiStatus = document.getElementById('dispAqiStatus');
+const dispAqiGauge = document.getElementById('dispAqiGauge');
 const dispPm25 = document.getElementById('dispPm25');
 const dispPm10 = document.getElementById('dispPm10');
 const dispUv = document.getElementById('dispUv');
 const dispEqList = document.getElementById('dispEqList');
+const bandScreen = document.getElementById('bandScreen');
 
 // Live Digital Clock & Date
 function updateClock() {
@@ -216,29 +223,54 @@ async function updateAllData() {
 
   // Render Weather & AQI
   dispTemp.innerText = `${currentWeatherData.temp.toFixed(1)} °C`;
+  if (dispTempBadge) dispTempBadge.innerText = `${currentWeatherData.temp.toFixed(1)} °C`;
   dispHum.innerText = `${currentWeatherData.humidity}%`;
   dispWind.innerText = `${currentWeatherData.wind} km/h`;
 
   dispAqi.innerText = currentWeatherData.aqi;
-  // AQI color indicator
-  if (currentWeatherData.aqi <= 50) {
-    dispAqi.style.color = "#4ade80"; // Good (Green)
-  } else if (currentWeatherData.aqi <= 100) {
-    dispAqi.style.color = "#facc15"; // Moderate (Yellow)
+  
+  // AQI color & gauge indicator
+  const aqiVal = currentWeatherData.aqi;
+  let aqiColor = '#4ade80';
+  let aqiText = 'BAIK';
+  if (aqiVal <= 50) {
+    aqiColor = '#4ade80'; // Good
+    aqiText = 'BAIK';
+  } else if (aqiVal <= 100) {
+    aqiColor = '#facc15'; // Moderate
+    aqiText = 'SEDANG';
+  } else if (aqiVal <= 150) {
+    aqiColor = '#fb923c'; // Unhealthy Sensitive
+    aqiText = 'SENSITIF';
   } else {
-    dispAqi.style.color = "#f87171"; // Unhealthy (Red)
+    aqiColor = '#f87171'; // Unhealthy
+    aqiText = 'BURUK';
   }
 
-  dispPm25.innerText = `${currentWeatherData.pm25} µg/m³`;
-  dispPm10.innerText = `${currentWeatherData.pm10} µg/m³`;
+  dispAqi.style.color = aqiColor;
+  if (dispAqiStatus) {
+    dispAqiStatus.innerText = aqiText;
+    dispAqiStatus.style.color = aqiColor;
+    dispAqiStatus.style.background = `${aqiColor}22`;
+  }
+
+  if (dispAqiGauge) {
+    const gaugePct = Math.min(100, Math.max(10, (aqiVal / 300) * 100));
+    dispAqiGauge.style.width = `${gaugePct}%`;
+  }
+
+  dispPm25.innerText = currentWeatherData.pm25;
+  dispPm10.innerText = currentWeatherData.pm10;
   dispUv.innerText = currentWeatherData.uv;
 
   // Render Earthquakes
-  dispEqList.innerHTML = currentEarthquakes.map((eq, i) => `
+  dispEqList.innerHTML = currentEarthquakes.slice(0, 2).map((eq, i) => `
     <div class="gw-eq-item">
-      <div class="gw-eq-mag">${i + 1}. ${eq.mag}</div>
+      <div class="gw-eq-row-top">
+        <span class="gw-eq-mag">${i + 1}. ${eq.mag}</span>
+        <span class="gw-eq-dist">${eq.distance} km</span>
+      </div>
       <div class="gw-eq-loc">${eq.location}</div>
-      <div class="gw-eq-dist">Distance: ${eq.distance} km</div>
     </div>
   `).join('');
 
@@ -246,42 +278,45 @@ async function updateAllData() {
   btnRefresh.disabled = false;
 }
 
-// Generate Push Message Text
-function generatePushMessage() {
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-  const dateStr = now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' });
-
-  const w = currentWeatherData || {
-    temp: 29.4, humidity: 74, wind: 8.2, aqi: 42, pm25: 18.4, pm10: 31.2, uv: 6
-  };
-  const eqs = currentEarthquakes.length > 0 ? currentEarthquakes : [
-    { mag: "M 4.8", location: "Indonesia", distance: 423 },
-    { mag: "M 4.3", location: "Indonesia", distance: 587 },
-    { mag: "M 5.1", location: "Philippines", distance: 821 }
-  ];
-
-  let msg = `🕒 ${timeStr} • ${dateStr}\n`;
-  msg += `🌍 GEOWATCH\n`;
-  msg += `📍 ${currentCityName} (${currentLat.toFixed(2)}, ${currentLon.toFixed(2)})\n\n`;
-  msg += `🌤️ WEATHER\nTemperature: ${w.temp.toFixed(1)} °C\nHumidity: ${w.humidity}%\nWind: ${w.wind} km/h\n\n`;
-  msg += `🌫️ AIR QUALITY\nAQI: ${w.aqi}\nPM2.5: ${w.pm25} µg/m³\nPM10: ${w.pm10} µg/m³\nUV: ${w.uv}\n\n`;
-  msg += `🌋 NEAREST EARTHQUAKES\n`;
-  eqs.forEach((eq, idx) => {
-    msg += `${idx + 1}. ${eq.mag}\n${eq.location}\nDistance: ${eq.distance} km\n\n`;
-  });
-
-  return msg.trim();
-}
-
-// Export 172x320 Watchface Wallpaper Image
+// Export High-Graphic 172x320 Watchface Wallpaper Image
 function exportWatchfaceImage() {
   const canvas = document.getElementById('exportCanvas');
   const ctx = canvas.getContext('2d');
 
-  // Background
-  ctx.fillStyle = '#000000';
-  ctx.fillRect(0, 0, 172, 320);
+  // Background based on current theme
+  if (currentTheme === 'cyber-hud') {
+    const grad = ctx.createRadialGradient(86, 30, 10, 86, 160, 170);
+    grad.addColorStop(0, '#111d33');
+    grad.addColorStop(1, '#050811');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 172, 320);
+
+    // Subtle grid overlay
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < 172; x += 16) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 320); ctx.stroke();
+    }
+    for (let y = 0; y < 320; y += 16) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(172, y); ctx.stroke();
+    }
+  } else if (currentTheme === 'satellite') {
+    const grad = ctx.createRadialGradient(86, 0, 10, 86, 160, 180);
+    grad.addColorStop(0, '#0c2b4e');
+    grad.addColorStop(1, '#020611');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 172, 320);
+  } else if (currentTheme === 'seismic') {
+    const grad = ctx.createRadialGradient(86, 300, 10, 86, 160, 180);
+    grad.addColorStop(0, '#380909');
+    grad.addColorStop(1, '#080203');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 172, 320);
+  } else {
+    // Pure OLED
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, 172, 320);
+  }
 
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, '0');
@@ -295,115 +330,159 @@ function exportWatchfaceImage() {
   };
   const eqs = currentEarthquakes.length > 0 ? currentEarthquakes : [
     { mag: "M 4.8", location: "Indonesia", distance: 423 },
-    { mag: "M 4.3", location: "Indonesia", distance: 587 },
-    { mag: "M 5.1", location: "Philippines", distance: 821 }
+    { mag: "M 4.3", location: "Indonesia", distance: 587 }
   ];
 
-  let y = 20;
+  // Helper function to draw rounded cards
+  function drawCard(x, y, width, height, radius = 6, bgColor = 'rgba(15, 23, 42, 0.7)', borderColor = 'rgba(255, 255, 255, 0.1)') {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    ctx.fillStyle = bgColor;
+    ctx.fill();
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
 
-  // Digital Clock Header
-  ctx.font = 'bold 20px monospace, system-ui';
+  let y = 18;
+
+  // 1. Digital Clock & Status Bar
+  ctx.font = 'bold 18px monospace, system-ui';
   ctx.fillStyle = '#ffffff';
   ctx.fillText(`${hours}:${minutes}`, 8, y);
 
   ctx.font = 'bold 8px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#60a5fa';
-  ctx.fillText(dayStr, 96, y - 2);
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillText(dayStr, 70, y - 2);
 
-  // Line Separator
-  y += 6;
-  ctx.strokeStyle = '#222d3d';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(8, y);
-  ctx.lineTo(164, y);
-  ctx.stroke();
+  // Live Pill
+  drawCard(136, y - 10, 28, 12, 3, 'rgba(16, 185, 129, 0.2)', 'rgba(52, 211, 153, 0.5)');
+  ctx.font = 'bold 7px system-ui';
+  ctx.fillStyle = '#34d399';
+  ctx.fillText('LIVE', 142, y - 1);
 
-  // Title
-  y += 14;
+  // 2. Header / Title Card
+  y += 8;
+  drawCard(6, y, 160, 32, 6, 'rgba(30, 58, 138, 0.35)', 'rgba(96, 165, 250, 0.3)');
   ctx.font = 'bold 10px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('🌍  GEOWATCH', 8, y);
+  ctx.fillText('🌍  GEOWATCH', 12, y + 13);
 
-  // City & Coords
-  y += 14;
-  ctx.font = 'bold 9px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#f3f4f6';
-  ctx.fillText(`📍 ${currentCityName.substring(0, 18)}`, 8, y);
+  ctx.font = 'bold 8.5px system-ui';
+  ctx.fillStyle = '#f1f5f9';
+  ctx.fillText(`📍 ${currentCityName.substring(0, 15)}`, 12, y + 25);
 
-  y += 11;
-  ctx.font = '8px monospace';
-  ctx.fillStyle = '#9ca3af';
-  ctx.fillText(`${currentLat.toFixed(2)}, ${currentLon.toFixed(2)}`, 20, y);
+  ctx.font = '7.5px monospace';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(`${currentLat.toFixed(2)}, ${currentLon.toFixed(2)}`, 102, y + 25);
 
-  // Weather Section
-  y += 16;
-  ctx.font = 'bold 9px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText('🌤️  WEATHER', 8, y);
+  // 3. Weather Card
+  y += 36;
+  drawCard(6, y, 160, 50, 6, 'rgba(15, 23, 42, 0.65)', 'rgba(255, 255, 255, 0.08)');
+  ctx.font = 'bold 8px system-ui';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('🌤️  WEATHER OVERVIEW', 12, y + 12);
 
-  ctx.font = '8.5px system-ui, -apple-system, sans-serif';
-  y += 12;
-  ctx.fillStyle = '#9ca3af'; ctx.fillText('Temperature:', 10, y);
-  ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.temp.toFixed(1)} °C`, 100, y);
+  // Temp Badge
+  drawCard(118, y + 4, 42, 11, 3, 'rgba(251, 191, 36, 0.15)', 'rgba(251, 191, 36, 0.3)');
+  ctx.font = 'bold 7.5px system-ui';
+  ctx.fillStyle = '#fbbf24';
+  ctx.fillText(`${w.temp.toFixed(1)} °C`, 122, y + 12);
 
-  y += 11;
-  ctx.fillStyle = '#9ca3af'; ctx.fillText('Humidity:', 10, y);
-  ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.humidity}%`, 100, y);
+  // 3 Columns inside Weather
+  drawCard(10, y + 18, 48, 26, 4, 'rgba(0, 0, 0, 0.3)', 'transparent');
+  ctx.font = '6.5px system-ui'; ctx.fillStyle = '#64748b'; ctx.fillText('SUHU', 20, y + 28);
+  ctx.font = 'bold 8px system-ui'; ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.temp.toFixed(1)}°`, 20, y + 39);
 
-  y += 11;
-  ctx.fillStyle = '#9ca3af'; ctx.fillText('Wind:', 10, y);
-  ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.wind} km/h`, 100, y);
+  drawCard(62, y + 18, 48, 26, 4, 'rgba(0, 0, 0, 0.3)', 'transparent');
+  ctx.font = '6.5px system-ui'; ctx.fillStyle = '#64748b'; ctx.fillText('LEMBAP', 70, y + 28);
+  ctx.font = 'bold 8px system-ui'; ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.humidity}%`, 74, y + 39);
 
-  // Air Quality
-  y += 16;
-  ctx.font = 'bold 9px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText('🌫️  AIR QUALITY', 8, y);
+  drawCard(114, y + 18, 48, 26, 4, 'rgba(0, 0, 0, 0.3)', 'transparent');
+  ctx.font = '6.5px system-ui'; ctx.fillStyle = '#64748b'; ctx.fillText('ANGIN', 124, y + 28);
+  ctx.font = 'bold 8px system-ui'; ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.wind}`, 126, y + 39);
 
-  ctx.font = '8.5px system-ui, -apple-system, sans-serif';
-  y += 12;
-  ctx.fillStyle = '#9ca3af'; ctx.fillText('AQI:', 10, y);
-  ctx.fillStyle = w.aqi <= 50 ? '#4ade80' : (w.aqi <= 100 ? '#facc15' : '#f87171');
-  ctx.fillText(`${w.aqi}`, 100, y);
+  // 4. Air Quality Card
+  y += 54;
+  drawCard(6, y, 160, 52, 6, 'rgba(15, 23, 42, 0.65)', 'rgba(255, 255, 255, 0.08)');
+  ctx.font = 'bold 8px system-ui';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('🌫️  AIR QUALITY (AQI)', 12, y + 12);
 
-  y += 11;
-  ctx.fillStyle = '#9ca3af'; ctx.fillText('PM2.5:', 10, y);
-  ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.pm25} µg/m³`, 80, y);
+  // AQI Large Number
+  const aqiColor = w.aqi <= 50 ? '#4ade80' : (w.aqi <= 100 ? '#facc15' : '#f87171');
+  ctx.font = 'bold 20px monospace';
+  ctx.fillStyle = aqiColor;
+  ctx.fillText(`${w.aqi}`, 14, y + 33);
 
-  y += 11;
-  ctx.fillStyle = '#9ca3af'; ctx.fillText('PM10:', 10, y);
-  ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.pm10} µg/m³`, 80, y);
+  // Sub items
+  ctx.font = '7px system-ui';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(`PM2.5: ${w.pm25}`, 80, y + 23);
+  ctx.fillText(`PM10: ${w.pm10}`, 80, y + 33);
+  ctx.fillText(`UV: ${w.uv}`, 130, y + 28);
 
-  y += 11;
-  ctx.fillStyle = '#9ca3af'; ctx.fillText('UV:', 10, y);
-  ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.uv}`, 100, y);
+  // Gauge Line
+  drawCard(12, y + 42, 148, 4, 2, 'rgba(255, 255, 255, 0.1)', 'transparent');
+  const fillWidth = Math.min(148, Math.max(14, (w.aqi / 300) * 148));
+  drawCard(12, y + 42, fillWidth, 4, 2, aqiColor, 'transparent');
 
-  // Earthquakes
-  y += 16;
-  ctx.font = 'bold 9px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText('🌋  NEAREST EARTHQUAKES', 8, y);
+  // 5. Seismic Card
+  y += 56;
+  drawCard(6, y, 160, 54, 6, 'rgba(15, 23, 42, 0.65)', 'rgba(239, 68, 68, 0.3)');
+  ctx.font = 'bold 8px system-ui';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('🌋  SEISMIC ALERTS', 12, y + 12);
 
-  ctx.font = '8px system-ui, -apple-system, sans-serif';
-  eqs.slice(0, 3).forEach((eq, idx) => {
-    y += 12;
+  drawCard(124, y + 4, 36, 11, 3, 'rgba(239, 68, 68, 0.15)', 'rgba(239, 68, 68, 0.4)');
+  ctx.font = 'bold 7px system-ui';
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText('⚡ BMKG', 128, y + 12);
+
+  eqs.slice(0, 2).forEach((eq, idx) => {
+    const itemY = y + 17 + (idx * 16);
+    drawCard(10, itemY, 152, 14, 3, 'rgba(0, 0, 0, 0.3)', 'transparent');
+    
+    ctx.font = 'bold 7.5px system-ui';
     ctx.fillStyle = '#f87171';
-    ctx.fillText(`${idx + 1}. ${eq.mag}`, 10, y);
-    y += 10;
-    ctx.fillStyle = '#d1d5db';
-    ctx.fillText(`${eq.location.substring(0, 20)}`, 10, y);
-    y += 10;
-    ctx.fillStyle = '#9ca3af';
-    ctx.fillText(`Distance: ${eq.distance} km`, 10, y);
+    ctx.fillText(`${idx + 1}. ${eq.mag}`, 14, itemY + 10);
+
+    ctx.font = '7px system-ui';
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillText(`${eq.location.substring(0, 14)}`, 54, itemY + 10);
+
+    ctx.font = '6.5px monospace';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText(`${eq.distance}km`, 128, itemY + 10);
   });
 
   // Download trigger
   const link = document.createElement('a');
-  link.download = `geowatch_band8_active_${Date.now()}.png`;
+  link.download = `geowatch_${currentTheme}_${Date.now()}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
 }
+
+// Theme Button Click Handlers
+document.querySelectorAll('.theme-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTheme = btn.dataset.theme;
+
+    // Update screen classes
+    bandScreen.className = `band-screen theme-${currentTheme}`;
+  });
+});
 
 // Send NTFY Notification
 async function sendNtfyPush() {
