@@ -226,9 +226,24 @@
               <input type="text" id="inputNtfyTopic" value="geowatch_band8_active" />
             </div>
             <div class="button-group">
-              <button class="btn btn-accent" id="btnSendNtfy">🚀 Kirim Test Push ke Smart Band</button>
+              <button class="btn btn-accent" id="btnSendNtfy">🚀 Kirim Manual Sekarang</button>
               <button class="btn btn-outline" id="btnCopyText">📋 Salin Teks</button>
             </div>
+            
+            <div style="margin-top: 16px; padding: 12px; background: #0b111c; border-radius: 8px; border: 1px solid #1e293b;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong style="font-size: 0.88rem; color: #f8fafc;">⏱️ Kirim Otomatis (Auto-Push Tiap 5 Menit)</strong>
+                  <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;" id="autoPushStatusText">Status: Aktif berjalan di latar belakang</div>
+                </div>
+                <label style="position: relative; display: inline-block; width: 44px; height: 24px; cursor: pointer;">
+                  <input type="checkbox" id="chkAutoPush" checked style="opacity: 0; width: 0; height: 0;">
+                  <span id="autoPushSlider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #10b981; border-radius: 24px; transition: .3s;"></span>
+                </label>
+              </div>
+              <div style="font-size: 0.75rem; color: #38bdf8; margin-top: 8px;" id="countdownText">⏳ Hitung mundur update berikutnya: 05:00</div>
+            </div>
+
             <div class="alert-box" id="statusAlert" style="display: none;"></div>
           </div>
         </div>

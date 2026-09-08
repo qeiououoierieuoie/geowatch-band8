@@ -529,6 +529,67 @@ async function sendNtfyPush() {
   }
 }
 
+// ─── Auto-Push Otomatis Tiap 5 Menit (300 Detik) ───────────────────────────
+const chkAutoPush        = document.getElementById('chkAutoPush');
+const autoPushSlider     = document.getElementById('autoPushSlider');
+const autoPushStatusText = document.getElementById('autoPushStatusText');
+const countdownText      = document.getElementById('countdownText');
+
+let autoPushIntervalId = null;
+let countdownTimerId   = null;
+let secondsRemaining   = 300; // 5 Menit
+
+function startAutoPush() {
+  secondsRemaining = 300;
+  updateCountdownDisplay();
+
+  if (countdownTimerId) clearInterval(countdownTimerId);
+  countdownTimerId = setInterval(() => {
+    secondsRemaining--;
+    if (secondsRemaining <= 0) {
+      secondsRemaining = 300;
+      triggerAutoPush();
+    }
+    updateCountdownDisplay();
+  }, 1000);
+
+  if (autoPushStatusText) autoPushStatusText.innerText = 'Status: Aktif mengirim otomatis ke jam tiap 5 menit';
+  if (autoPushSlider) autoPushSlider.style.backgroundColor = '#10b981';
+}
+
+function stopAutoPush() {
+  if (countdownTimerId) clearInterval(countdownTimerId);
+  if (autoPushStatusText) autoPushStatusText.innerText = 'Status: Dimatikan (Manual saja)';
+  if (countdownText) countdownText.innerText = '⏸️ Pengiriman otomatis dimatikan';
+  if (autoPushSlider) autoPushSlider.style.backgroundColor = '#475569';
+}
+
+function updateCountdownDisplay() {
+  if (!countdownText) return;
+  const m = Math.floor(secondsRemaining / 60);
+  const s = secondsRemaining % 60;
+  countdownText.innerText = `⏳ Hitung mundur update berikutnya: ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+async function triggerAutoPush() {
+  // Update data cuaca, gempa, gunung, tsunami terlebih dahulu
+  await updateAllData();
+  // Kirimkan otomatis ke NTFY tanpa perlu diklik
+  await sendNtfyPush();
+}
+
+if (chkAutoPush) {
+  chkAutoPush.addEventListener('change', e => {
+    if (e.target.checked) {
+      startAutoPush();
+    } else {
+      stopAutoPush();
+    }
+  });
+  // Langsung aktifkan timer otomatis sejak halaman web dibuka
+  startAutoPush();
+}
+
 // ─── Event Listeners ─────────────────────────────────────────────────────────
 btnRefresh.addEventListener('click', updateAllData);
 btnExportWallpaper.addEventListener('click', exportWatchfaceImage);
