@@ -274,8 +274,8 @@ def send_telegram_notification(token, chat_id, message):
 
 def main():
     parser = argparse.ArgumentParser(description="GeoWatch Engine for Smart Band 8 Active")
-    parser.add_argument("--lat", type=float, default=DEFAULT_LAT, help="Latitude lokasi")
-    parser.add_argument("--lon", type=float, default=DEFAULT_LON, help="Longitude lokasi")
+    parser.add_argument("--lat", type=float, default=-0.95, help="Latitude lokasi (Default: -0.95 Padang)")
+    parser.add_argument("--lon", type=float, default=100.35, help="Longitude lokasi (Default: 100.35 Padang)")
     parser.add_argument("--ntfy", type=str, default="", help="NTFY topic name (misal: geowatch_band8)")
     parser.add_argument("--tg-token", type=str, default="", help="Telegram Bot Token")
     parser.add_argument("--tg-chat", type=str, default="", help="Telegram Chat ID")

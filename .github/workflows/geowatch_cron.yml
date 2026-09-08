@@ -20,4 +20,4 @@ jobs:
 
       - name: Jalankan GeoWatch & Kirim Notifikasi ke Mi Band
         run: |
-          python geowatch_engine.py --lat -2.99 --lon 104.76 --ntfy geowatch_band8_active
+          python geowatch_engine.py --lat -0.95 --lon 100.35 --ntfy geowatch_band8_active

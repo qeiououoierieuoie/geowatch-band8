@@ -6,7 +6,7 @@ echo        🌍 GEOWATCH REALTIME ENGINE (AUTOMATIC LOOP)
 echo                 Xiaomi Smart Band 8 Active
 echo ========================================================
 echo.
-echo [*] Lokasi: Palembang / GPS (-2.99, 104.76)
+echo [*] Lokasi: Padang, Sumatera Barat (-0.95, 100.35)
 echo [*] Topic NTFY: geowatch_band8_active
 echo [*] Update Otomatis: Setiap 5 Menit (300 detik)
 echo.
@@ -15,6 +15,6 @@ echo tetap berjalan otomatis di background!
 echo ========================================================
 echo.
 
-python "%~dp0geowatch_engine.py" --lat -2.99 --lon 104.76 --ntfy geowatch_band8_active --loop --interval 300
+python "%~dp0geowatch_engine.py" --lat -0.95 --lon 100.35 --ntfy geowatch_band8_active --loop --interval 300
 
 pause

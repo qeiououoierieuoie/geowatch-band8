@@ -4,9 +4,9 @@
  */
 
 // State
-let currentLat = -2.99;
-let currentLon = 104.76;
-let currentCityName = "Palembang, ID";
+let currentLat = -0.95;
+let currentLon = 100.35;
+let currentCityName = "Padang, ID";
 let currentWeatherData = null;
 let currentEarthquakes = [];
 let currentVolcanoes = [];
