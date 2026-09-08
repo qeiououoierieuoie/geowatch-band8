@@ -11,14 +11,14 @@
 </head>
 <body>
   <div class="app-container">
-    
+
     <!-- Header -->
     <header class="main-header">
       <div class="brand">
         <span class="logo-icon">🌍</span>
         <div>
           <h1>GeoWatch Studio</h1>
-          <p class="subtitle">Xiaomi Smart Band 8 Active • Live Weather, AQI & Earthquake Monitor</p>
+          <p class="subtitle">Xiaomi Smart Band 8 Active • Weather, AQI, Earthquake, Volcano & Tsunami</p>
         </div>
       </div>
       <div class="header-badges">
@@ -29,7 +29,7 @@
 
     <!-- Main Workspace -->
     <div class="workspace">
-      
+
       <!-- Band Preview Column -->
       <div class="preview-section">
         <div class="section-title">
@@ -41,111 +41,101 @@
           </div>
         </div>
 
-        <!-- Visual Theme Switcher -->
-        <div class="theme-selector-bar">
-          <span class="theme-label">🎨 Gaya Visual:</span>
-          <div class="theme-buttons">
-            <button class="theme-btn active" data-theme="cyber-hud">🛡️ Cyber HUD</button>
-            <button class="theme-btn" data-theme="satellite">🛰️ Satellite Earth</button>
-            <button class="theme-btn" data-theme="seismic">⚡ Seismic Radar</button>
-            <button class="theme-btn" data-theme="oled-glass">💎 OLED Glass</button>
-          </div>
-        </div>
-
         <!-- Band Physical Mockup -->
         <div class="band-frame-wrapper" id="bandFrameWrapper">
           <div class="band-strap band-strap-top"></div>
           <div class="band-case">
-            <div class="band-screen theme-cyber-hud" id="bandScreen">
-              
-              <!-- Screen Visual Background Overlay -->
-              <div class="screen-bg-graphic" id="screenBgGraphic"></div>
-
-              <!-- Screen Content matching rich watchface -->
+            <div class="band-screen" id="bandScreen">
               <div class="geowatch-content" id="geowatchContent">
-                
-                <!-- Digital Clock & Status Bar -->
-                <div class="gw-top-bar">
-                  <div class="gw-clock-group">
-                    <div class="gw-digital-time" id="dispClock">01:42</div>
-                    <div class="gw-date" id="dispDate">SEL, 8 SEP</div>
-                  </div>
-                  <div class="gw-status-icons">
-                    <span class="pulse-dot"></span>
-                    <span class="live-tag">LIVE</span>
-                  </div>
+
+                <!-- Digital Clock & Date -->
+                <div class="gw-clock-bar">
+                  <div class="gw-digital-time" id="dispClock">01:50</div>
+                  <div class="gw-date" id="dispDate">SEL, 8 SEP</div>
                 </div>
 
-                <!-- Header / Title Card -->
-                <div class="gw-card gw-header-card">
-                  <div class="gw-row gw-header">
-                    <span class="gw-globe-anim">🌍</span>
-                    <span class="gw-title">GEOWATCH</span>
-                    <span class="gw-chip-tag">HUD v2</span>
-                  </div>
-                  <div class="gw-city-line">
+                <!-- Header -->
+                <div class="gw-row gw-header">
+                  <span class="gw-icon">🌍</span>
+                  <span class="gw-title">GEOWATCH</span>
+                </div>
+
+                <!-- Location -->
+                <div class="gw-location-block">
+                  <div class="gw-row gw-city-row">
                     <span class="gw-icon">📍</span>
-                    <span class="gw-city-val" id="dispCity">Padang, ID</span>
-                    <span class="gw-coords-sub" id="dispCoords">-0.95, 100.35</span>
+                    <span class="gw-city-val" id="dispCity">Palembang, ID</span>
+                  </div>
+                  <div class="gw-coords-sub" id="dispCoords">-2.99, 104.76</div>
+                </div>
+
+                <!-- Weather -->
+                <div class="gw-section">
+                  <div class="gw-row gw-sec-head">
+                    <span class="gw-icon">🌤️</span>
+                    <span class="gw-sec-title">WEATHER</span>
+                  </div>
+                  <div class="gw-data-group">
+                    <div class="gw-item"><span class="gw-label">Temperature:</span><span class="gw-val" id="dispTemp">29.4 °C</span></div>
+                    <div class="gw-item"><span class="gw-label">Humidity:</span><span class="gw-val" id="dispHum">74%</span></div>
+                    <div class="gw-item"><span class="gw-label">Wind:</span><span class="gw-val" id="dispWind">8.2 km/h</span></div>
                   </div>
                 </div>
 
-                <!-- Weather Card -->
-                <div class="gw-card gw-weather-card">
-                  <div class="gw-card-header">
-                    <span class="gw-sec-title">🌤️ WEATHER OVERVIEW</span>
-                    <span class="gw-badge-temp" id="dispTempBadge">24.7 °C</span>
+                <!-- Air Quality -->
+                <div class="gw-section">
+                  <div class="gw-row gw-sec-head">
+                    <span class="gw-icon">🌫️</span>
+                    <span class="gw-sec-title">AIR QUALITY</span>
                   </div>
-                  <div class="gw-data-grid">
-                    <div class="gw-metric">
-                      <span class="gw-m-lbl">Suhu</span>
-                      <span class="gw-m-val" id="dispTemp">24.7 °C</span>
-                    </div>
-                    <div class="gw-metric">
-                      <span class="gw-m-lbl">Lembap</span>
-                      <span class="gw-m-val" id="dispHum">94%</span>
-                    </div>
-                    <div class="gw-metric">
-                      <span class="gw-m-lbl">Angin</span>
-                      <span class="gw-m-val" id="dispWind">1.5 km/h</span>
-                    </div>
+                  <div class="gw-data-group">
+                    <div class="gw-item"><span class="gw-label">AQI:</span><span class="gw-val aqi-val" id="dispAqi">42</span></div>
+                    <div class="gw-item"><span class="gw-label">PM2.5:</span><span class="gw-val" id="dispPm25">18.4 µg/m³</span></div>
+                    <div class="gw-item"><span class="gw-label">PM10:</span><span class="gw-val" id="dispPm10">31.2 µg/m³</span></div>
+                    <div class="gw-item"><span class="gw-label">UV:</span><span class="gw-val" id="dispUv">6</span></div>
                   </div>
                 </div>
 
-                <!-- Air Quality Card with Gauge Bar -->
-                <div class="gw-card gw-aqi-card">
-                  <div class="gw-card-header">
-                    <span class="gw-sec-title">🌫️ AIR QUALITY (AQI)</span>
-                    <span class="gw-aqi-chip" id="dispAqiStatus">SEDANG</span>
-                  </div>
-                  <div class="gw-aqi-main">
-                    <div class="gw-aqi-num" id="dispAqi">150</div>
-                    <div class="gw-aqi-details">
-                      <div class="gw-sub-item"><span>PM2.5:</span> <b id="dispPm25">26.4</b></div>
-                      <div class="gw-sub-item"><span>PM10:</span> <b id="dispPm10">27.8</b></div>
-                      <div class="gw-sub-item"><span>UV:</span> <b id="dispUv">0</b></div>
-                    </div>
-                  </div>
-                  <!-- Visual Progress Gauge -->
-                  <div class="gw-gauge-track">
-                    <div class="gw-gauge-fill" id="dispAqiGauge" style="width: 50%;"></div>
-                  </div>
-                </div>
-
-                <!-- Nearest Earthquakes Card with Seismic Accent -->
-                <div class="gw-card gw-seismic-card">
-                  <div class="gw-card-header">
-                    <span class="gw-sec-title">🌋 SEISMIC ALERTS</span>
-                    <span class="gw-seismic-pulse">⚡ BMKG</span>
+                <!-- Nearest Earthquakes -->
+                <div class="gw-section">
+                  <div class="gw-row gw-sec-head">
+                    <span class="gw-icon">🌋</span>
+                    <span class="gw-sec-title">NEAREST EARTHQUAKES</span>
                   </div>
                   <div class="gw-eq-list" id="dispEqList">
-                    <!-- Dynamic Earthquake Items -->
                     <div class="gw-eq-item">
-                      <div class="gw-eq-row-top">
-                        <span class="gw-eq-mag">1. M 4.4</span>
-                        <span class="gw-eq-dist">1673 km</span>
-                      </div>
-                      <div class="gw-eq-loc">Dampit, Indonesia</div>
+                      <div class="gw-eq-mag">1. M 4.8</div>
+                      <div class="gw-eq-loc">Indonesia</div>
+                      <div class="gw-eq-dist">Distance: 423 km</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Volcano Activity -->
+                <div class="gw-section">
+                  <div class="gw-row gw-sec-head">
+                    <span class="gw-icon">🗻</span>
+                    <span class="gw-sec-title">VOLCANO ACTIVITY</span>
+                  </div>
+                  <div class="gw-eq-list" id="dispVolcanoList">
+                    <div class="gw-eq-item gw-volcano-item">
+                      <div class="gw-eq-mag">Merapi</div>
+                      <div class="gw-eq-loc">Siaga (Level III)</div>
+                      <div class="gw-eq-dist">Distance: 380 km</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tsunami Warning -->
+                <div class="gw-section">
+                  <div class="gw-row gw-sec-head">
+                    <span class="gw-icon">🌊</span>
+                    <span class="gw-sec-title">TSUNAMI WARNING</span>
+                  </div>
+                  <div id="dispTsunamiBlock">
+                    <div class="gw-tsunami-safe">
+                      <span class="gw-tsunami-ok">✅ AMAN</span>
+                      <span class="gw-tsunami-sub">Tidak ada peringatan aktif</span>
                     </div>
                   </div>
                 </div>
@@ -163,14 +153,14 @@
         </div>
       </div>
 
-      <!-- Controls & Tools Column -->
+      <!-- Controls Column -->
       <div class="controls-section">
-        
-        <!-- Location Settings Card -->
+
+        <!-- Location Card -->
         <div class="card">
           <div class="card-header">
             <h3>📍 Pengaturan Lokasi</h3>
-            <button class="btn-sm" id="btnGps">📍 Gunakan GPS HP/Browser</button>
+            <button class="btn-sm" id="btnGps">📍 Gunakan GPS</button>
           </div>
           <div class="card-body">
             <div class="form-row">
@@ -190,62 +180,75 @@
               <button class="preset-btn" data-lat="-7.79" data-lon="110.36">Yogyakarta</button>
               <button class="preset-btn" data-lat="-8.40" data-lon="115.18">Bali</button>
               <button class="preset-btn" data-lat="-0.95" data-lon="100.35">Padang</button>
+              <button class="preset-btn" data-lat="-8.66" data-lon="121.07">Flores</button>
             </div>
-            <button class="btn btn-secondary w-100" id="btnRefresh">🔄 Perbarui Data Realtime</button>
+            <button class="btn btn-secondary w-100" id="btnRefresh">🔄 Perbarui Semua Data Realtime</button>
           </div>
         </div>
 
-        <!-- Push Notification Bridge Card -->
+        <!-- Alerts Status Card -->
         <div class="card">
           <div class="card-header">
-            <h3>📲 Push Alert Realtime ke Smart Band 8 Active</h3>
+            <h3>🚨 Status Peringatan Aktif</h3>
+          </div>
+          <div class="card-body">
+            <div class="alert-status-grid">
+              <div class="alert-item" id="alertEq">
+                <span class="alert-icon">🌋</span>
+                <div><div class="alert-title">Gempa</div><div class="alert-val" id="alertEqVal">Memuat...</div></div>
+              </div>
+              <div class="alert-item" id="alertVolcano">
+                <span class="alert-icon">🗻</span>
+                <div><div class="alert-title">Gunung Api</div><div class="alert-val" id="alertVolcanoVal">Memuat...</div></div>
+              </div>
+              <div class="alert-item" id="alertTsunami">
+                <span class="alert-icon">🌊</span>
+                <div><div class="alert-title">Tsunami</div><div class="alert-val" id="alertTsunamiVal">Memuat...</div></div>
+              </div>
+              <div class="alert-item" id="alertAqi">
+                <span class="alert-icon">🌫️</span>
+                <div><div class="alert-title">AQI Udara</div><div class="alert-val" id="alertAqiVal">Memuat...</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Push Notification Card -->
+        <div class="card">
+          <div class="card-header">
+            <h3>📲 Push Alert ke Smart Band 8 Active</h3>
             <span class="status-indicator">Siap Kirim</span>
           </div>
           <div class="card-body">
-            <p class="desc">
-              Notifikasi ini akan dikirim ke aplikasi <strong>NTFY</strong> di Android/iPhone Anda, lalu otomatis diteruskan dan <strong>bergetar di Smart Band 8 Active</strong> melalui Mi Fitness!
-            </p>
-            
+            <p class="desc">Notifikasi ini akan dikirim ke <strong>NTFY</strong> di HP Anda, lalu <strong>bergetar otomatis di Mi Band 8 Active</strong> via Mi Fitness.</p>
             <div class="form-group">
-              <label>Topic NTFY (Bebas / Buat sendiri):</label>
-              <input type="text" id="inputNtfyTopic" value="geowatch_band8_active" placeholder="contoh: geowatch_anda" />
+              <label>Topic NTFY:</label>
+              <input type="text" id="inputNtfyTopic" value="geowatch_band8_active" />
             </div>
-
             <div class="button-group">
               <button class="btn btn-accent" id="btnSendNtfy">🚀 Kirim Test Push ke Smart Band</button>
-              <button class="btn btn-outline" id="btnCopyText">📋 Salin Teks Notifikasi</button>
+              <button class="btn btn-outline" id="btnCopyText">📋 Salin Teks</button>
             </div>
-
             <div class="alert-box" id="statusAlert" style="display: none;"></div>
           </div>
         </div>
 
-        <!-- Step-by-Step Guide Card -->
+        <!-- Guide Card -->
         <div class="card guide-card">
-          <div class="card-header">
-            <h3>📖 Cara Pasang di Smart Band 8 Active</h3>
-          </div>
+          <div class="card-header"><h3>📖 Cara Pasang di Smart Band 8 Active</h3></div>
           <div class="card-body">
             <ol class="guide-steps">
-              <li>
-                <strong>Metode 1 (Wallpaper Watchface):</strong>
-                Klik tombol <em>"Download Watchface Wallpaper"</em> &rarr; Buka aplikasi <strong>Mi Fitness</strong> di HP &rarr; Masuk ke <em>Device</em> &rarr; <em>Watch faces</em> &rarr; <em>Custom photo / Wallpaper</em> &rarr; Pilih gambar yang sudah di-download.
-              </li>
-              <li>
-                <strong>Metode 2 (Push Alert Getar Realtime):</strong>
-                Install aplikasi <strong>NTFY</strong> dari Play Store / App Store &rarr; Subscribe ke topic: <code id="guideTopic">geowatch_band8_active</code> &rarr; Di <strong>Mi Fitness</strong>, pastikan izin <em>App Alerts / Notifikasi</em> untuk NTFY sudah diaktifkan &rarr; Band akan bergetar dan menampilkan info cuaca & gempa secara realtime!
-              </li>
+              <li><strong>Wallpaper:</strong> Download gambar &rarr; Mi Fitness &rarr; Watch faces &rarr; Custom photo.</li>
+              <li><strong>Alert Realtime:</strong> Install <strong>ntfy</strong> di HP &rarr; Subscribe topic: <code id="guideTopic">geowatch_band8_active</code> &rarr; Aktifkan ntfy di Mi Fitness App notifications.</li>
+              <li><strong>Cloud 24 Jam:</strong> Aktifkan GitHub Actions di <a href="https://github.com/qeiououoierieuoie/geowatch-band8/actions" target="_blank">repository Anda</a>.</li>
             </ol>
           </div>
         </div>
 
       </div>
-
     </div>
 
-    <!-- Hidden Canvas for high-res 172x320 PNG generation -->
     <canvas id="exportCanvas" width="172" height="320" style="display: none;"></canvas>
-
   </div>
 
   <script src="app.js"></script>

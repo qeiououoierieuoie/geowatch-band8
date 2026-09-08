@@ -164,55 +164,80 @@ def get_city_name(lat, lon):
             country = data.get("countryCode", "ID")
             return f"{city}, {country}"
     except Exception:
-        if abs(lat - (-2.99)) < 0.1 and abs(lon - 104.76) < 0.1:
-            return "Palembang, ID"
-        if abs(lat - (-6.20)) < 0.1 and abs(lon - 106.84) < 0.1:
-            return "Jakarta, ID"
+        if abs(lat - (-2.99)) < 0.1 and abs(lon - 104.76) < 0.1: return "Palembang, ID"
+        if abs(lat - (-6.20)) < 0.1 and abs(lon - 106.84) < 0.1: return "Jakarta, ID"
         return f"{lat:.2f}, {lon:.2f}"
 
-def format_geowatch_message(lat, lon, weather, earthquakes, city_name=None):
-    """Menyusun teks persis seperti format visual GEOWATCH dengan jam & nama kota"""
+KNOWN_VOLCANOES_ID = [
+    {"name": "Merapi",        "lat": -7.54,  "lon": 110.44, "level": "Siaga (III)"},
+    {"name": "Semeru",        "lat": -8.11,  "lon": 112.92, "level": "Awas (IV)"},
+    {"name": "Sinabung",      "lat":  3.17,  "lon":  98.39, "level": "Siaga (III)"},
+    {"name": "Lewotobi",      "lat": -8.53,  "lon": 122.77, "level": "Awas (IV)"},
+    {"name": "Anak Krakatau", "lat": -6.10,  "lon": 105.42, "level": "Waspada (II)"},
+    {"name": "Bromo",         "lat": -7.94,  "lon": 112.95, "level": "Waspada (II)"},
+    {"name": "Agung",         "lat": -8.34,  "lon": 115.51, "level": "Waspada (II)"},
+]
+
+def fetch_volcanoes(user_lat, user_lon, limit=3):
+    """Mengambil data gunung berapi aktif terdekat dari Indonesia"""
+    results = []
+    for v in KNOWN_VOLCANOES_ID:
+        dist = haversine_distance(user_lat, user_lon, v["lat"], v["lon"])
+        results.append({"name": v["name"], "level": v["level"], "distance": dist})
+    results.sort(key=lambda x: x["distance"])
+    return results[:limit]
+
+def fetch_tsunami_warnings():
+    """Mengambil peringatan tsunami dari BMKG TEWS"""
+    warnings = []
+    try:
+        url = "https://data.bmkg.go.id/DataMKG/TEWS/gempadirasakan.json"
+        req = urllib.request.Request(url, headers={'User-Agent': 'GeoWatch/1.0'})
+        with urllib.request.urlopen(req, timeout=8) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            gempa_list = data.get("Infogempa", {}).get("gempa", [])
+            if isinstance(gempa_list, dict):
+                gempa_list = [gempa_list]
+            for g in gempa_list:
+                potensi = g.get("Potensi", "").lower()
+                if "tsunami" in potensi and "tidak berpotensi" not in potensi:
+                    warnings.append({
+                        "region": g.get("Wilayah", "Indonesia"),
+                        "magnitude": g.get("Magnitude", "-"),
+                        "detail": g.get("Potensi", ""),
+                        "time": g.get("Jam", ""),
+                    })
+    except Exception as e:
+        pass
+    return warnings
+
+def format_geowatch_message(lat, lon, weather, earthquakes, volcanoes=None, tsunamis=None, city_name=None):
+    """Menyusun teks ringkas tanpa emoji agar tidak terpotong di layar Smart Band 8 Active"""
     if not city_name:
         city_name = get_city_name(lat, lon)
-        
-    current_time_str = time.strftime("%H:%M • %a, %d %b")
-    
-    lines = []
-    lines.append(f"🕒 {current_time_str}")
-    lines.append("🌍 GEOWATCH")
-    lines.append(f"📍 {city_name}")
-    lines.append(f"({lat:.2f}, {lon:.2f})\n")
-    
-    lines.append("🌤️ WEATHER")
-    t = f"{weather['temp']:.1f} °C" if weather['temp'] is not None else "--"
-    h = f"{weather['humidity']}%" if weather['humidity'] is not None else "--"
-    w = f"{weather['wind_speed']} km/h" if weather['wind_speed'] is not None else "--"
-    lines.append(f"Temperature: {t}")
-    lines.append(f"Humidity: {h}")
-    lines.append(f"Wind: {w}\n")
-    
-    lines.append("🌫️ AIR QUALITY")
-    aqi = str(weather['aqi']) if weather['aqi'] is not None else "--"
-    pm25 = f"{weather['pm25']} µg/m³" if weather['pm25'] is not None else "--"
-    pm10 = f"{weather['pm10']} µg/m³" if weather['pm10'] is not None else "--"
-    uv = str(weather['uv']) if weather['uv'] is not None else "--"
-    lines.append(f"AQI: {aqi}")
-    lines.append(f"PM2.5: {pm25}")
-    lines.append(f"PM10: {pm10}")
-    lines.append(f"UV: {uv}\n")
-    
-    lines.append("🌋 NEAREST EARTHQUAKES")
-    if not earthquakes:
-        lines.append("No recent earthquakes detected.")
-    else:
-        for idx, eq in enumerate(earthquakes, start=1):
-            lines.append(f"{idx}. {eq['magnitude']}")
-            lines.append(f"{eq['location']}")
-            lines.append(f"Distance: {eq['distance']} km\n")
+    if volcanoes is None:
+        volcanoes = []
+    if tsunamis is None:
+        tsunamis = []
+
+    current_time_str = time.strftime("%H:%M | %d %b")
+
+    eq = earthquakes[0] if earthquakes else None
+    vo = volcanoes[0] if volcanoes else None
+    ts_text = f"BAHAYA! {tsunamis[0]['region']}" if tsunamis else "AMAN"
+
+    lines = [
+        f"[GEOWATCH] {current_time_str} | {city_name}",
+        f"CUACA: {weather['temp']:.1f}C, Hum {weather['humidity']}%, Angin {weather['wind_speed']}km/h",
+        f"AQI: {weather['aqi']} | PM2.5: {weather['pm25']} | UV: {weather['uv']}",
+        f"GEMPA: {eq['magnitude']} {eq['location'][:18]} ({eq['distance']}km)" if eq else "GEMPA: Tidak ada",
+        f"GUNUNG: {vo['name']} - {vo['level']} ({vo['distance']}km)" if vo else "GUNUNG: Normal",
+        f"TSUNAMI: {ts_text}"
+    ]
 
     return "\n".join(lines).strip()
 
-def send_ntfy_notification(topic, message, title="🌍 GEOWATCH ALERT"):
+def send_ntfy_notification(topic, message, title="GEOWATCH ALERT"):
     """Mengirim push notifikasi via NTFY.sh (Gratis & Langsung getar di HP & Mi Band)"""
     url = f"https://ntfy.sh/{topic}"
     try:
@@ -270,8 +295,15 @@ def main():
         
         print("[+] Mengambil data Gempa Terdekat (BMKG & USGS)...")
         earthquakes = fetch_nearest_earthquakes(args.lat, args.lon)
+
+        print("[+] Mengambil data Gunung Berapi Aktif...")
+        volcanoes = fetch_volcanoes(args.lat, args.lon)
+
+        print("[+] Memeriksa Peringatan Tsunami (BMKG TEWS)...")
+        tsunamis = fetch_tsunami_warnings()
         
-        formatted_msg = format_geowatch_message(args.lat, args.lon, weather, earthquakes)
+        city_name = get_city_name(args.lat, args.lon)
+        formatted_msg = format_geowatch_message(args.lat, args.lon, weather, earthquakes, volcanoes, tsunamis, city_name)
         print("\n--- [ FORMAT NOTIFIKASI MI BAND ] ---")
         print(formatted_msg)
         print("---------------------------------------\n")

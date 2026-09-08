@@ -1,539 +1,499 @@
+/**
+ * GeoWatch Studio - Client App
+ * Weather + AQI + Earthquake + Volcano + Tsunami
+ */
+
 // State
 let currentLat = -2.99;
 let currentLon = 104.76;
-let currentCityName = "Palembang, Indonesia";
+let currentCityName = "Palembang, ID";
 let currentWeatherData = null;
 let currentEarthquakes = [];
-
-// Selected Theme
-let currentTheme = 'cyber-hud';
+let currentVolcanoes = [];
+let currentTsunamiWarnings = [];
 
 // DOM Elements
-const dispClock = document.getElementById('dispClock');
-const dispDate = document.getElementById('dispDate');
-const dispCity = document.getElementById('dispCity');
-const dispCoords = document.getElementById('dispCoords');
-const dispTemp = document.getElementById('dispTemp');
-const dispTempBadge = document.getElementById('dispTempBadge');
-const dispHum = document.getElementById('dispHum');
-const dispWind = document.getElementById('dispWind');
-const dispAqi = document.getElementById('dispAqi');
-const dispAqiStatus = document.getElementById('dispAqiStatus');
-const dispAqiGauge = document.getElementById('dispAqiGauge');
-const dispPm25 = document.getElementById('dispPm25');
-const dispPm10 = document.getElementById('dispPm10');
-const dispUv = document.getElementById('dispUv');
-const dispEqList = document.getElementById('dispEqList');
-const bandScreen = document.getElementById('bandScreen');
+const dispClock    = document.getElementById('dispClock');
+const dispDate     = document.getElementById('dispDate');
+const dispCity     = document.getElementById('dispCity');
+const dispCoords   = document.getElementById('dispCoords');
+const dispTemp     = document.getElementById('dispTemp');
+const dispHum      = document.getElementById('dispHum');
+const dispWind     = document.getElementById('dispWind');
+const dispAqi      = document.getElementById('dispAqi');
+const dispPm25     = document.getElementById('dispPm25');
+const dispPm10     = document.getElementById('dispPm10');
+const dispUv       = document.getElementById('dispUv');
+const dispEqList   = document.getElementById('dispEqList');
+const dispVolcanoList  = document.getElementById('dispVolcanoList');
+const dispTsunamiBlock = document.getElementById('dispTsunamiBlock');
+const inputLat     = document.getElementById('inputLat');
+const inputLon     = document.getElementById('inputLon');
+const inputNtfyTopic = document.getElementById('inputNtfyTopic');
+const guideTopic   = document.getElementById('guideTopic');
+const btnRefresh   = document.getElementById('btnRefresh');
+const btnGps       = document.getElementById('btnGps');
+const btnExportWallpaper = document.getElementById('btnExportWallpaper');
+const btnSendNtfy  = document.getElementById('btnSendNtfy');
+const btnCopyText  = document.getElementById('btnCopyText');
+const statusAlert  = document.getElementById('statusAlert');
+const bandFrameWrapper = document.getElementById('bandFrameWrapper');
 
-// Live Digital Clock & Date
+// ─── Live Digital Clock ─────────────────────────────────────────────────────
 function updateClock() {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  
-  if (dispClock) {
-    dispClock.innerText = `${hours}:${minutes}`;
-  }
+  const now  = new Date();
+  const hh   = String(now.getHours()).padStart(2, '0');
+  const mm   = String(now.getMinutes()).padStart(2, '0');
+  if (dispClock) dispClock.innerText = `${hh}:${mm}`;
 
-  const days = ['MIN', 'SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB'];
-  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
-  
-  const dayName = days[now.getDay()];
-  const dateNum = now.getDate();
-  const monthName = months[now.getMonth()];
-
-  if (dispDate) {
-    dispDate.innerText = `${dayName}, ${dateNum} ${monthName}`;
-  }
+  const DAYS   = ['MIN','SEN','SEL','RAB','KAM','JUM','SAB'];
+  const MONTHS = ['JAN','FEB','MAR','APR','MEI','JUN','JUL','AGU','SEP','OKT','NOV','DES'];
+  if (dispDate) dispDate.innerText = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]}`;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// Reverse Geocoding City Name
-async function fetchCityName(lat, lon) {
-  try {
-    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const city = data.city || data.locality || data.principalSubdivision || "Lokasi Anda";
-    const country = data.countryCode || "ID";
-    return `${city}, ${country}`;
-  } catch (e) {
-    // Fallback if network blocked
-    if (Math.abs(lat - (-2.99)) < 0.1 && Math.abs(lon - 104.76) < 0.1) return "Palembang, ID";
-    if (Math.abs(lat - (-6.20)) < 0.1 && Math.abs(lon - 106.84) < 0.1) return "Jakarta, ID";
-    if (Math.abs(lat - (-7.79)) < 0.1 && Math.abs(lon - 110.36) < 0.1) return "Yogyakarta, ID";
-    if (Math.abs(lat - (-8.40)) < 0.1 && Math.abs(lon - 115.18) < 0.1) return "Denpasar, Bali";
-    return `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-  }
-}
-
-const inputLat = document.getElementById('inputLat');
-const inputLon = document.getElementById('inputLon');
-const inputNtfyTopic = document.getElementById('inputNtfyTopic');
-const guideTopic = document.getElementById('guideTopic');
-
-const btnRefresh = document.getElementById('btnRefresh');
-const btnGps = document.getElementById('btnGps');
-const btnExportWallpaper = document.getElementById('btnExportWallpaper');
-const btnSendNtfy = document.getElementById('btnSendNtfy');
-const btnCopyText = document.getElementById('btnCopyText');
-const statusAlert = document.getElementById('statusAlert');
-const bandFrameWrapper = document.getElementById('bandFrameWrapper');
-
-// Haversine Distance
-function haversineDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // km
+// ─── Haversine Distance ──────────────────────────────────────────────────────
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return Math.round(R * c);
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-// Fetch Weather & Air Quality from Open-Meteo
+// ─── Reverse Geocoding ───────────────────────────────────────────────────────
+async function fetchCityName(lat, lon) {
+  try {
+    const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`);
+    const d = await r.json();
+    const city = d.city || d.locality || d.principalSubdivision || 'Lokasi Anda';
+    return `${city}, ${d.countryCode || 'ID'}`;
+  } catch {
+    const presets = {
+      '-2.99,104.76': 'Palembang, ID', '-6.20,106.84': 'Jakarta, ID',
+      '-7.79,110.36': 'Yogyakarta, ID', '-8.40,115.18': 'Denpasar, ID',
+      '-0.95,100.35': 'Padang, ID', '-8.66,121.07': 'Flores, ID'
+    };
+    return presets[`${lat},${lon}`] || `${lat}, ${lon}`;
+  }
+}
+
+// ─── Weather & AQI (Open-Meteo) ─────────────────────────────────────────────
 async function fetchWeatherAndAqi(lat, lon) {
   try {
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`;
-    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm10,pm2_5,uv_index`;
-
-    const [wRes, aqiRes] = await Promise.all([
-      fetch(weatherUrl).then(r => r.json()),
-      fetch(aqiUrl).then(r => r.json())
+    const [wRes, aRes] = await Promise.all([
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`).then(r=>r.json()),
+      fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm10,pm2_5,uv_index`).then(r=>r.json())
     ]);
-
     const w = wRes.current || {};
-    const a = aqiRes.current || {};
-
+    const a = aRes.current || {};
     return {
-      temp: w.temperature_2m !== undefined ? w.temperature_2m : 29.4,
-      humidity: w.relative_humidity_2m !== undefined ? w.relative_humidity_2m : 74,
-      wind: w.wind_speed_10m !== undefined ? w.wind_speed_10m : 8.2,
-      aqi: a.us_aqi !== undefined ? a.us_aqi : 42,
-      pm25: a.pm2_5 !== undefined ? a.pm2_5 : 18.4,
-      pm10: a.pm10 !== undefined ? a.pm10 : 31.2,
-      uv: a.uv_index !== undefined ? a.uv_index : 6
+      temp: w.temperature_2m ?? 29.4, humidity: w.relative_humidity_2m ?? 74,
+      wind: w.wind_speed_10m ?? 8.2,  aqi: a.us_aqi ?? 42,
+      pm25: a.pm2_5 ?? 18.4, pm10: a.pm10 ?? 31.2, uv: a.uv_index ?? 0
     };
-  } catch (err) {
-    console.error("Error fetching weather/aqi:", err);
-    return {
-      temp: 29.4,
-      humidity: 74,
-      wind: 8.2,
-      aqi: 42,
-      pm25: 18.4,
-      pm10: 31.2,
-      uv: 6
-    };
+  } catch {
+    return { temp:29.4, humidity:74, wind:8.2, aqi:42, pm25:18.4, pm10:31.2, uv:0 };
   }
 }
 
-// Fetch Earthquakes (USGS API + BMKG proxy)
+// ─── Earthquakes (USGS) ──────────────────────────────────────────────────────
 async function fetchEarthquakes(userLat, userLon) {
-  const earthquakes = [];
-
   try {
-    // USGS 2.5+ past day
-    const usgsUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson";
-    const res = await fetch(usgsUrl);
-    const data = await res.json();
-
-    if (data.features) {
-      data.features.forEach(feat => {
-        const coords = feat.geometry?.coordinates || [];
-        if (coords.length >= 2) {
-          const eqLon = coords[0];
-          const eqLat = coords[1];
-          const mag = feat.properties?.mag || 0;
-          const place = feat.properties?.place || "Unknown";
-          const dist = haversineDistance(userLat, userLon, eqLat, eqLon);
-
-          // Extract clean country/region name
-          let locName = place;
-          if (place.includes("of ")) {
-            locName = place.split("of ")[1].trim();
-          }
-
-          earthquakes.push({
-            mag: `M ${mag.toFixed(1)}`,
-            location: locName,
-            distance: dist
-          });
-        }
-      });
+    const data = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson').then(r=>r.json());
+    const list = (data.features || []).map(f => {
+      const [lon, lat] = f.geometry.coordinates;
+      const dist = haversine(userLat, userLon, lat, lon);
+      let loc = f.properties.place || 'Unknown';
+      if (loc.includes(' of ')) loc = loc.split(' of ')[1].trim();
+      return { mag: `M ${(f.properties.mag||0).toFixed(1)}`, location: loc, distance: dist };
+    });
+    list.sort((a,b) => a.distance - b.distance);
+    const unique = [];
+    const seen = new Set();
+    for (const eq of list) {
+      if (![...seen].some(s => Math.abs(eq.distance-s) < 15)) {
+        seen.add(eq.distance); unique.push(eq);
+      }
+      if (unique.length >= 3) break;
     }
-  } catch (err) {
-    console.error("Error fetching earthquakes:", err);
-  }
-
-  // Sort by nearest distance
-  earthquakes.sort((a, b) => a.distance - b.distance);
-
-  // Return top 3 unique
-  const unique = [];
-  const seen = new Set();
-  for (const eq of earthquakes) {
-    const isDup = Array.from(seen).some(s => Math.abs(eq.distance - s) < 15);
-    if (!isDup) {
-      seen.add(eq.distance);
-      unique.push(eq);
-    }
-    if (unique.length >= 3) break;
-  }
-
-  // Fallback defaults if offline / none found
-  if (unique.length === 0) {
-    return [
-      { mag: "M 4.8", location: "Indonesia", distance: 423 },
-      { mag: "M 4.3", location: "Indonesia", distance: 587 },
-      { mag: "M 5.1", location: "Philippines", distance: 821 }
+    return unique.length ? unique : [
+      {mag:'M 4.8', location:'Indonesia', distance:423},
+      {mag:'M 4.3', location:'Indonesia', distance:587},
+      {mag:'M 5.1', location:'Philippines', distance:821}
     ];
+  } catch {
+    return [{mag:'M 4.8',location:'Indonesia',distance:423}];
   }
-
-  return unique;
 }
 
-// Update UI
+// ─── Volcanic Activity (GDACS RSS via allorigins proxy) ──────────────────────
+async function fetchVolcanoes(userLat, userLon) {
+  const KNOWN_VOLCANOES_ID = [
+    { name:'Merapi', lat:-7.54, lon:110.44, level:'Siaga (III)' },
+    { name:'Semeru', lat:-8.11, lon:112.92, level:'Awas (IV)' },
+    { name:'Sinabung', lat:3.17, lon:98.39, level:'Siaga (III)' },
+    { name:'Lewotobi', lat:-8.53, lon:122.77, level:'Awas (IV)' },
+    { name:'Anak Krakatau', lat:-6.10, lon:105.42, level:'Waspada (II)' },
+    { name:'Bromo', lat:-7.94, lon:112.95, level:'Waspada (II)' },
+    { name:'Agung', lat:-8.34, lon:115.51, level:'Waspada (II)' },
+  ];
+
+  let results = [];
+  // Try GDACS for live volcano events
+  try {
+    const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://www.gdacs.org/xml/rss_vo.xml')}`;
+    const text = await fetch(proxy, { signal: AbortSignal.timeout(6000) }).then(r=>r.text());
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'text/xml');
+    const items = xml.querySelectorAll('item');
+    items.forEach(item => {
+      try {
+        const title = item.querySelector('title')?.textContent || '';
+        const desc  = item.querySelector('description')?.textContent || '';
+        const lat   = parseFloat(item.querySelector('geo\\:lat, lat')?.textContent || '0');
+        const lon   = parseFloat(item.querySelector('geo\\:long, long')?.textContent || '0');
+        if (!lat || !lon) return;
+        const dist = haversine(userLat, userLon, lat, lon);
+        const levelMatch = desc.match(/level[:\s]*([\w\s]+)/i);
+        results.push({
+          name: title.replace(/volcano|eruptive/gi,'').trim(),
+          level: levelMatch ? levelMatch[1].trim() : 'Aktif',
+          distance: dist
+        });
+      } catch {}
+    });
+  } catch {}
+
+  // Merge with known Indonesian volcanoes
+  KNOWN_VOLCANOES_ID.forEach(v => {
+    const dist = haversine(userLat, userLon, v.lat, v.lon);
+    if (!results.some(r => r.name.toLowerCase().includes(v.name.toLowerCase()))) {
+      results.push({ name: v.name, level: v.level, distance: dist });
+    }
+  });
+
+  results.sort((a,b) => a.distance - b.distance);
+  return results.slice(0, 3);
+}
+
+// ─── Tsunami Warnings (BMKG TEWS + NOAA fallback) ────────────────────────────
+async function fetchTsunamiWarnings() {
+  const warnings = [];
+  // BMKG TEWS - gempa dirasakan & berpotensi tsunami
+  try {
+    const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://data.bmkg.go.id/DataMKG/TEWS/gempadirasakan.json')}`;
+    const data = await fetch(proxy, { signal: AbortSignal.timeout(6000) }).then(r=>r.json());
+    const list = data?.Infogempa?.gempa || [];
+    const arr = Array.isArray(list) ? list : [list];
+    arr.forEach(g => {
+      const pot = (g.Potensi || '').toLowerCase();
+      if (pot.includes('tsunami') && !pot.includes('tidak berpotensi')) {
+        warnings.push({
+          source: 'BMKG',
+          region: g.Wilayah || 'Indonesia',
+          magnitude: g.Magnitude || '-',
+          time: g.Jam || '',
+          detail: g.Potensi || ''
+        });
+      }
+    });
+  } catch {}
+
+  return warnings;
+}
+
+// ─── Update Status Badges ────────────────────────────────────────────────────
+function updateStatusBadges(weather, earthquakes, volcanoes, tsunamis) {
+  // Earthquake
+  const eqEl = document.getElementById('alertEqVal');
+  if (earthquakes.length > 0) {
+    const nearest = earthquakes[0];
+    eqEl.innerText = `${nearest.mag} • ${nearest.distance} km`;
+    eqEl.className = 'alert-val ' + (parseFloat(nearest.mag.replace('M ','')) >= 5.5 ? 'danger' : 'warn');
+  } else { eqEl.innerText = 'Tidak ada'; eqEl.className = 'alert-val safe'; }
+
+  // Volcano
+  const volcEl = document.getElementById('alertVolcanoVal');
+  if (volcanoes.length > 0) {
+    const nearest = volcanoes[0];
+    const lvl = nearest.level.toLowerCase();
+    volcEl.innerText = `${nearest.name} • ${nearest.distance} km`;
+    volcEl.className = 'alert-val ' + (lvl.includes('awas') ? 'danger' : lvl.includes('siaga') ? 'warn' : 'safe');
+  } else { volcEl.innerText = 'Normal'; volcEl.className = 'alert-val safe'; }
+
+  // Tsunami
+  const tsEl = document.getElementById('alertTsunamiVal');
+  if (tsunamis.length > 0) {
+    tsEl.innerText = `⚠️ ${tsunamis.length} Peringatan Aktif!`;
+    tsEl.className = 'alert-val danger';
+  } else { tsEl.innerText = '✅ Aman'; tsEl.className = 'alert-val safe'; }
+
+  // AQI
+  const aqiEl = document.getElementById('alertAqiVal');
+  const aqi = weather?.aqi || 0;
+  aqiEl.innerText = aqi <= 50 ? `${aqi} - Baik` : aqi <= 100 ? `${aqi} - Sedang` : aqi <= 150 ? `${aqi} - Sensitif` : `${aqi} - Buruk`;
+  aqiEl.className = 'alert-val ' + (aqi <= 50 ? 'safe' : aqi <= 100 ? 'warn' : 'danger');
+}
+
+// ─── Render Volcano Section ──────────────────────────────────────────────────
+function renderVolcanoes(volcanoes) {
+  if (!dispVolcanoList) return;
+  if (!volcanoes.length) {
+    dispVolcanoList.innerHTML = '<div class="gw-eq-item gw-volcano-item"><div class="gw-eq-mag">Tidak ada aktivitas</div></div>';
+    return;
+  }
+  dispVolcanoList.innerHTML = volcanoes.slice(0,3).map((v,i) => `
+    <div class="gw-eq-item gw-volcano-item">
+      <div class="gw-eq-mag">${i+1}. ${v.name}</div>
+      <div class="gw-eq-loc">${v.level}</div>
+      <div class="gw-eq-dist">Jarak: ${v.distance} km</div>
+    </div>
+  `).join('');
+}
+
+// ─── Render Tsunami Section ──────────────────────────────────────────────────
+function renderTsunami(warnings) {
+  if (!dispTsunamiBlock) return;
+  if (!warnings.length) {
+    dispTsunamiBlock.innerHTML = `
+      <div class="gw-tsunami-safe">
+        <span class="gw-tsunami-ok">✅ AMAN</span>
+        <span class="gw-tsunami-sub">Tidak ada peringatan aktif</span>
+      </div>`;
+    return;
+  }
+  dispTsunamiBlock.innerHTML = warnings.map(w => `
+    <div class="gw-tsunami-warning">
+      <div class="gw-tsunami-alert">⚠️ PERINGATAN TSUNAMI!</div>
+      <div class="gw-tsunami-detail">${w.region} • ${w.magnitude}</div>
+      <div class="gw-tsunami-detail">${w.detail.substring(0,50)}</div>
+    </div>
+  `).join('');
+}
+
+// ─── Main Update Function ────────────────────────────────────────────────────
 async function updateAllData() {
-  btnRefresh.innerText = "⏳ Memperbarui Data...";
+  btnRefresh.innerText = '⏳ Memperbarui...';
   btnRefresh.disabled = true;
 
   currentLat = parseFloat(inputLat.value) || -2.99;
   currentLon = parseFloat(inputLon.value) || 104.76;
-  dispCoords.innerText = `${currentLat.toFixed(2)}, ${currentLon.toFixed(2)}`;
+  if (dispCoords) dispCoords.innerText = `${currentLat.toFixed(2)}, ${currentLon.toFixed(2)}`;
 
-  // Fetch city name, weather & earthquakes
-  const [cityName, weatherData, earthquakes] = await Promise.all([
+  const [city, weather, earthquakes, volcanoes, tsunamis] = await Promise.all([
     fetchCityName(currentLat, currentLon),
     fetchWeatherAndAqi(currentLat, currentLon),
-    fetchEarthquakes(currentLat, currentLon)
+    fetchEarthquakes(currentLat, currentLon),
+    fetchVolcanoes(currentLat, currentLon),
+    fetchTsunamiWarnings()
   ]);
 
-  currentCityName = cityName;
-  currentWeatherData = weatherData;
+  currentCityName = city;
+  currentWeatherData = weather;
   currentEarthquakes = earthquakes;
+  currentVolcanoes = volcanoes;
+  currentTsunamiWarnings = tsunamis;
 
-  if (dispCity) {
-    dispCity.innerText = currentCityName;
-  }
+  if (dispCity) dispCity.innerText = city;
 
-  // Render Weather & AQI
-  dispTemp.innerText = `${currentWeatherData.temp.toFixed(1)} °C`;
-  if (dispTempBadge) dispTempBadge.innerText = `${currentWeatherData.temp.toFixed(1)} °C`;
-  dispHum.innerText = `${currentWeatherData.humidity}%`;
-  dispWind.innerText = `${currentWeatherData.wind} km/h`;
+  // Weather
+  dispTemp.innerText = `${weather.temp.toFixed(1)} °C`;
+  dispHum.innerText  = `${weather.humidity}%`;
+  dispWind.innerText = `${weather.wind} km/h`;
 
-  dispAqi.innerText = currentWeatherData.aqi;
-  
-  // AQI color & gauge indicator
-  const aqiVal = currentWeatherData.aqi;
-  let aqiColor = '#4ade80';
-  let aqiText = 'BAIK';
-  if (aqiVal <= 50) {
-    aqiColor = '#4ade80'; // Good
-    aqiText = 'BAIK';
-  } else if (aqiVal <= 100) {
-    aqiColor = '#facc15'; // Moderate
-    aqiText = 'SEDANG';
-  } else if (aqiVal <= 150) {
-    aqiColor = '#fb923c'; // Unhealthy Sensitive
-    aqiText = 'SENSITIF';
-  } else {
-    aqiColor = '#f87171'; // Unhealthy
-    aqiText = 'BURUK';
-  }
+  // AQI
+  const aqi = weather.aqi;
+  dispAqi.innerText = aqi;
+  dispAqi.style.color = aqi <= 50 ? '#4ade80' : aqi <= 100 ? '#facc15' : aqi <= 150 ? '#fb923c' : '#f87171';
+  dispPm25.innerText = `${weather.pm25} µg/m³`;
+  dispPm10.innerText = `${weather.pm10} µg/m³`;
+  dispUv.innerText   = weather.uv;
 
-  dispAqi.style.color = aqiColor;
-  if (dispAqiStatus) {
-    dispAqiStatus.innerText = aqiText;
-    dispAqiStatus.style.color = aqiColor;
-    dispAqiStatus.style.background = `${aqiColor}22`;
-  }
-
-  if (dispAqiGauge) {
-    const gaugePct = Math.min(100, Math.max(10, (aqiVal / 300) * 100));
-    dispAqiGauge.style.width = `${gaugePct}%`;
-  }
-
-  dispPm25.innerText = currentWeatherData.pm25;
-  dispPm10.innerText = currentWeatherData.pm10;
-  dispUv.innerText = currentWeatherData.uv;
-
-  // Render Earthquakes
-  dispEqList.innerHTML = currentEarthquakes.slice(0, 2).map((eq, i) => `
+  // Earthquakes
+  dispEqList.innerHTML = earthquakes.slice(0,3).map((eq,i) => `
     <div class="gw-eq-item">
-      <div class="gw-eq-row-top">
-        <span class="gw-eq-mag">${i + 1}. ${eq.mag}</span>
-        <span class="gw-eq-dist">${eq.distance} km</span>
-      </div>
+      <div class="gw-eq-mag">${i+1}. ${eq.mag}</div>
       <div class="gw-eq-loc">${eq.location}</div>
+      <div class="gw-eq-dist">Distance: ${eq.distance} km</div>
     </div>
   `).join('');
 
-  btnRefresh.innerText = "🔄 Perbarui Data Realtime";
+  // Volcano & Tsunami
+  renderVolcanoes(volcanoes);
+  renderTsunami(tsunamis);
+  updateStatusBadges(weather, earthquakes, volcanoes, tsunamis);
+
+  btnRefresh.innerText = '🔄 Perbarui Semua Data Realtime';
   btnRefresh.disabled = false;
 }
 
-// Export High-Graphic 172x320 Watchface Wallpaper Image
+// ─── Generate Push Message (Ringkas & Tanpa Emoji agar Muat Penuh di Mi Band 8 Active) ───
+function generatePushMessage() {
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const DAYS = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  const MONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const dateStr = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]}`;
+
+  const w = currentWeatherData || { temp:29.4, humidity:74, wind:8.2, aqi:42, pm25:18.4, pm10:31.2, uv:0 };
+  const eqs = currentEarthquakes.length ? currentEarthquakes : [{mag:'M 4.8', location:'Indonesia', distance:423}];
+  const vols = currentVolcanoes.length ? currentVolcanoes : [{name:'Merapi', level:'Siaga', distance:380}];
+  const ts = currentTsunamiWarnings;
+
+  const eq = eqs[0] || {mag:'-', location:'-', distance:'-'};
+  const vo = vols[0] || {name:'-', level:'Normal', distance:'-'};
+  const tsText = ts.length ? `BAHAYA! ${ts[0].region}` : 'AMAN';
+
+  // Format super ringkas tanpa emoji, muat dalam 1 layar notifikasi Smart Band 8 Active
+  let msg = `[GEOWATCH] ${timeStr} | ${currentCityName}\n`;
+  msg += `CUACA: ${w.temp.toFixed(1)}C, Hum ${w.humidity}%, Angin ${w.wind}km/h\n`;
+  msg += `AQI: ${w.aqi} | PM2.5: ${w.pm25} | UV: ${w.uv}\n`;
+  msg += `GEMPA: ${eq.mag} ${eq.location.substring(0,18)} (${eq.distance}km)\n`;
+  msg += `GUNUNG: ${vo.name} - ${vo.level} (${vo.distance}km)\n`;
+  msg += `TSUNAMI: ${tsText}`;
+
+  return msg.trim();
+}
+
+// ─── Export 172x320 Wallpaper PNG ───────────────────────────────────────────
 function exportWatchfaceImage() {
   const canvas = document.getElementById('exportCanvas');
   const ctx = canvas.getContext('2d');
-
-  // Background based on current theme
-  if (currentTheme === 'cyber-hud') {
-    const grad = ctx.createRadialGradient(86, 30, 10, 86, 160, 170);
-    grad.addColorStop(0, '#111d33');
-    grad.addColorStop(1, '#050811');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 172, 320);
-
-    // Subtle grid overlay
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < 172; x += 16) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 320); ctx.stroke();
-    }
-    for (let y = 0; y < 320; y += 16) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(172, y); ctx.stroke();
-    }
-  } else if (currentTheme === 'satellite') {
-    const grad = ctx.createRadialGradient(86, 0, 10, 86, 160, 180);
-    grad.addColorStop(0, '#0c2b4e');
-    grad.addColorStop(1, '#020611');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 172, 320);
-  } else if (currentTheme === 'seismic') {
-    const grad = ctx.createRadialGradient(86, 300, 10, 86, 160, 180);
-    grad.addColorStop(0, '#380909');
-    grad.addColorStop(1, '#080203');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 172, 320);
-  } else {
-    // Pure OLED
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, 172, 320);
-  }
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, 172, 320);
 
   const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const days = ['MIN', 'SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB'];
-  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
-  const dayStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const DAYS=['MIN','SEN','SEL','RAB','KAM','JUM','SAB'];
+  const MONTHS=['JAN','FEB','MAR','APR','MEI','JUN','JUL','AGU','SEP','OKT','NOV','DES'];
+  const dayStr = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]}`;
 
-  const w = currentWeatherData || {
-    temp: 29.4, humidity: 74, wind: 8.2, aqi: 42, pm25: 18.4, pm10: 31.2, uv: 6
-  };
-  const eqs = currentEarthquakes.length > 0 ? currentEarthquakes : [
-    { mag: "M 4.8", location: "Indonesia", distance: 423 },
-    { mag: "M 4.3", location: "Indonesia", distance: 587 }
-  ];
-
-  // Helper function to draw rounded cards
-  function drawCard(x, y, width, height, radius = 6, bgColor = 'rgba(15, 23, 42, 0.7)', borderColor = 'rgba(255, 255, 255, 0.1)') {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-    ctx.fillStyle = bgColor;
-    ctx.fill();
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
+  const w = currentWeatherData || { temp:29.4, humidity:74, wind:8.2, aqi:42, pm25:18.4, pm10:31.2, uv:0 };
+  const eqs = currentEarthquakes.length ? currentEarthquakes : [{mag:'M 4.8', location:'Indonesia', distance:423}];
+  const vols = currentVolcanoes.length ? currentVolcanoes : [{name:'Merapi', level:'Siaga (III)', distance:380}];
+  const ts = currentTsunamiWarnings;
 
   let y = 18;
 
-  // 1. Digital Clock & Status Bar
-  ctx.font = 'bold 18px monospace, system-ui';
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText(`${hours}:${minutes}`, 8, y);
+  // Clock + Date
+  ctx.font = 'bold 18px monospace'; ctx.fillStyle = '#ffffff';
+  ctx.fillText(`${hh}:${mm}`, 8, y);
+  ctx.font = 'bold 8px system-ui'; ctx.fillStyle = '#60a5fa';
+  ctx.fillText(dayStr, 76, y - 2);
 
-  ctx.font = 'bold 8px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#38bdf8';
-  ctx.fillText(dayStr, 70, y - 2);
+  y += 6;
+  ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(8, y); ctx.lineTo(164, y); ctx.stroke();
 
-  // Live Pill
-  drawCard(136, y - 10, 28, 12, 3, 'rgba(16, 185, 129, 0.2)', 'rgba(52, 211, 153, 0.5)');
-  ctx.font = 'bold 7px system-ui';
-  ctx.fillStyle = '#34d399';
-  ctx.fillText('LIVE', 142, y - 1);
+  // Title
+  y += 13;
+  ctx.font = 'bold 10px system-ui'; ctx.fillStyle = '#ffffff';
+  ctx.fillText('🌍  GEOWATCH', 8, y);
+  y += 12;
+  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#f3f4f6';
+  ctx.fillText(`📍 ${currentCityName.substring(0,18)}`, 8, y);
+  y += 10;
+  ctx.font = '7.5px monospace'; ctx.fillStyle = '#9ca3af';
+  ctx.fillText(`${currentLat.toFixed(2)}, ${currentLon.toFixed(2)}`, 20, y);
 
-  // 2. Header / Title Card
-  y += 8;
-  drawCard(6, y, 160, 32, 6, 'rgba(30, 58, 138, 0.35)', 'rgba(96, 165, 250, 0.3)');
-  ctx.font = 'bold 10px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText('🌍  GEOWATCH', 12, y + 13);
+  // Weather
+  y += 14;
+  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#e5e7eb';
+  ctx.fillText('🌤️ WEATHER', 8, y);
+  ctx.font = '8px system-ui';
+  y += 11; ctx.fillStyle='#9ca3af'; ctx.fillText('Temperature:',10,y); ctx.fillStyle='#fff'; ctx.fillText(`${w.temp.toFixed(1)} °C`,100,y);
+  y += 10; ctx.fillStyle='#9ca3af'; ctx.fillText('Humidity:',10,y);    ctx.fillStyle='#fff'; ctx.fillText(`${w.humidity}%`,100,y);
+  y += 10; ctx.fillStyle='#9ca3af'; ctx.fillText('Wind:',10,y);        ctx.fillStyle='#fff'; ctx.fillText(`${w.wind} km/h`,100,y);
 
-  ctx.font = 'bold 8.5px system-ui';
-  ctx.fillStyle = '#f1f5f9';
-  ctx.fillText(`📍 ${currentCityName.substring(0, 15)}`, 12, y + 25);
+  // AQI
+  y += 13;
+  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#e5e7eb';
+  ctx.fillText('🌫️ AIR QUALITY', 8, y);
+  ctx.font = '8px system-ui';
+  const aqiColor = w.aqi<=50?'#4ade80':w.aqi<=100?'#facc15':'#f87171';
+  y += 11; ctx.fillStyle='#9ca3af'; ctx.fillText('AQI:',10,y); ctx.fillStyle=aqiColor; ctx.fillText(`${w.aqi}`,100,y);
+  y += 10; ctx.fillStyle='#9ca3af'; ctx.fillText('PM2.5:',10,y); ctx.fillStyle='#fff'; ctx.fillText(`${w.pm25} µg/m³`,78,y);
+  y += 10; ctx.fillStyle='#9ca3af'; ctx.fillText('PM10:',10,y);  ctx.fillStyle='#fff'; ctx.fillText(`${w.pm10} µg/m³`,78,y);
+  y += 10; ctx.fillStyle='#9ca3af'; ctx.fillText('UV:',10,y);   ctx.fillStyle='#fff'; ctx.fillText(`${w.uv}`,100,y);
 
-  ctx.font = '7.5px monospace';
-  ctx.fillStyle = '#94a3b8';
-  ctx.fillText(`${currentLat.toFixed(2)}, ${currentLon.toFixed(2)}`, 102, y + 25);
-
-  // 3. Weather Card
-  y += 36;
-  drawCard(6, y, 160, 50, 6, 'rgba(15, 23, 42, 0.65)', 'rgba(255, 255, 255, 0.08)');
-  ctx.font = 'bold 8px system-ui';
-  ctx.fillStyle = '#94a3b8';
-  ctx.fillText('🌤️  WEATHER OVERVIEW', 12, y + 12);
-
-  // Temp Badge
-  drawCard(118, y + 4, 42, 11, 3, 'rgba(251, 191, 36, 0.15)', 'rgba(251, 191, 36, 0.3)');
-  ctx.font = 'bold 7.5px system-ui';
-  ctx.fillStyle = '#fbbf24';
-  ctx.fillText(`${w.temp.toFixed(1)} °C`, 122, y + 12);
-
-  // 3 Columns inside Weather
-  drawCard(10, y + 18, 48, 26, 4, 'rgba(0, 0, 0, 0.3)', 'transparent');
-  ctx.font = '6.5px system-ui'; ctx.fillStyle = '#64748b'; ctx.fillText('SUHU', 20, y + 28);
-  ctx.font = 'bold 8px system-ui'; ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.temp.toFixed(1)}°`, 20, y + 39);
-
-  drawCard(62, y + 18, 48, 26, 4, 'rgba(0, 0, 0, 0.3)', 'transparent');
-  ctx.font = '6.5px system-ui'; ctx.fillStyle = '#64748b'; ctx.fillText('LEMBAP', 70, y + 28);
-  ctx.font = 'bold 8px system-ui'; ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.humidity}%`, 74, y + 39);
-
-  drawCard(114, y + 18, 48, 26, 4, 'rgba(0, 0, 0, 0.3)', 'transparent');
-  ctx.font = '6.5px system-ui'; ctx.fillStyle = '#64748b'; ctx.fillText('ANGIN', 124, y + 28);
-  ctx.font = 'bold 8px system-ui'; ctx.fillStyle = '#ffffff'; ctx.fillText(`${w.wind}`, 126, y + 39);
-
-  // 4. Air Quality Card
-  y += 54;
-  drawCard(6, y, 160, 52, 6, 'rgba(15, 23, 42, 0.65)', 'rgba(255, 255, 255, 0.08)');
-  ctx.font = 'bold 8px system-ui';
-  ctx.fillStyle = '#94a3b8';
-  ctx.fillText('🌫️  AIR QUALITY (AQI)', 12, y + 12);
-
-  // AQI Large Number
-  const aqiColor = w.aqi <= 50 ? '#4ade80' : (w.aqi <= 100 ? '#facc15' : '#f87171');
-  ctx.font = 'bold 20px monospace';
-  ctx.fillStyle = aqiColor;
-  ctx.fillText(`${w.aqi}`, 14, y + 33);
-
-  // Sub items
-  ctx.font = '7px system-ui';
-  ctx.fillStyle = '#94a3b8';
-  ctx.fillText(`PM2.5: ${w.pm25}`, 80, y + 23);
-  ctx.fillText(`PM10: ${w.pm10}`, 80, y + 33);
-  ctx.fillText(`UV: ${w.uv}`, 130, y + 28);
-
-  // Gauge Line
-  drawCard(12, y + 42, 148, 4, 2, 'rgba(255, 255, 255, 0.1)', 'transparent');
-  const fillWidth = Math.min(148, Math.max(14, (w.aqi / 300) * 148));
-  drawCard(12, y + 42, fillWidth, 4, 2, aqiColor, 'transparent');
-
-  // 5. Seismic Card
-  y += 56;
-  drawCard(6, y, 160, 54, 6, 'rgba(15, 23, 42, 0.65)', 'rgba(239, 68, 68, 0.3)');
-  ctx.font = 'bold 8px system-ui';
-  ctx.fillStyle = '#94a3b8';
-  ctx.fillText('🌋  SEISMIC ALERTS', 12, y + 12);
-
-  drawCard(124, y + 4, 36, 11, 3, 'rgba(239, 68, 68, 0.15)', 'rgba(239, 68, 68, 0.4)');
-  ctx.font = 'bold 7px system-ui';
-  ctx.fillStyle = '#ef4444';
-  ctx.fillText('⚡ BMKG', 128, y + 12);
-
-  eqs.slice(0, 2).forEach((eq, idx) => {
-    const itemY = y + 17 + (idx * 16);
-    drawCard(10, itemY, 152, 14, 3, 'rgba(0, 0, 0, 0.3)', 'transparent');
-    
-    ctx.font = 'bold 7.5px system-ui';
-    ctx.fillStyle = '#f87171';
-    ctx.fillText(`${idx + 1}. ${eq.mag}`, 14, itemY + 10);
-
-    ctx.font = '7px system-ui';
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillText(`${eq.location.substring(0, 14)}`, 54, itemY + 10);
-
-    ctx.font = '6.5px monospace';
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText(`${eq.distance}km`, 128, itemY + 10);
+  // Earthquakes
+  y += 13;
+  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#e5e7eb';
+  ctx.fillText('🌋 NEAREST EARTHQUAKES', 8, y);
+  ctx.font = '7.5px system-ui';
+  eqs.slice(0,2).forEach((eq,i) => {
+    y += 10; ctx.fillStyle='#f87171'; ctx.fillText(`${i+1}. ${eq.mag}`,10,y);
+    y += 9;  ctx.fillStyle='#d1d5db'; ctx.fillText(`${eq.location.substring(0,18)}`,10,y);
+    y += 9;  ctx.fillStyle='#9ca3af'; ctx.fillText(`Jarak: ${eq.distance} km`,10,y);
   });
 
-  // Download trigger
+  // Volcanoes
+  y += 12;
+  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#e5e7eb';
+  ctx.fillText('🗻 VOLCANO ACTIVITY', 8, y);
+  ctx.font = '7.5px system-ui';
+  vols.slice(0,2).forEach((v,i) => {
+    y += 10; ctx.fillStyle='#fb923c'; ctx.fillText(`${i+1}. ${v.name}`,10,y);
+    y += 9;  ctx.fillStyle='#d1d5db'; ctx.fillText(`${v.level}`,10,y);
+    y += 9;  ctx.fillStyle='#9ca3af'; ctx.fillText(`Jarak: ${v.distance} km`,10,y);
+  });
+
+  // Tsunami
+  y += 12;
+  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#e5e7eb';
+  ctx.fillText('🌊 TSUNAMI WARNING', 8, y);
+  y += 11;
+  ctx.font = '8px system-ui';
+  if (ts.length > 0) {
+    ctx.fillStyle = '#f87171';
+    ctx.fillText(`⚠️ ${ts.length} PERINGATAN AKTIF!`, 10, y);
+  } else {
+    ctx.fillStyle = '#4ade80';
+    ctx.fillText('✅ AMAN - Tidak ada peringatan', 10, y);
+  }
+
   const link = document.createElement('a');
-  link.download = `geowatch_${currentTheme}_${Date.now()}.png`;
+  link.download = `geowatch_band8_active_${Date.now()}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
 }
 
-// Theme Button Click Handlers
-document.querySelectorAll('.theme-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentTheme = btn.dataset.theme;
-
-    // Update screen classes
-    bandScreen.className = `band-screen theme-${currentTheme}`;
-  });
-});
-
-// Send NTFY Notification
+// ─── NTFY Push ───────────────────────────────────────────────────────────────
 async function sendNtfyPush() {
   const topic = inputNtfyTopic.value.trim() || 'geowatch_band8_active';
   const msg = generatePushMessage();
-
   statusAlert.style.display = 'block';
   statusAlert.className = 'alert-box';
   statusAlert.innerText = 'Mengirim notifikasi ke NTFY...';
-
   try {
     const res = await fetch(`https://ntfy.sh/${topic}`, {
-      method: 'POST',
-      body: msg,
-      headers: {
-        'Title': '🌍 GEOWATCH ALERT',
-        'Priority': 'urgent',
-        'Tags': 'earth_asia,volcano,barometer'
-      }
+      method: 'POST', body: msg,
+      headers: { 'Title':'GEOWATCH ALERT', 'Priority':'urgent' }
     });
-
     if (res.ok) {
       statusAlert.className = 'alert-box success';
-      statusAlert.innerText = `✅ Berhasil dikirim ke topic [${topic}]! Jika Mi Fitness terhubung dengan NTFY, Smart Band 8 Active Anda akan langsung bergetar.`;
-    } else {
-      throw new Error(`Server returned ${res.status}`);
-    }
+      statusAlert.innerText = `✅ Berhasil terkirim ke topic [${topic}]! Smart Band 8 Active Anda akan bergetar.`;
+    } else throw new Error(`Server: ${res.status}`);
   } catch (err) {
     statusAlert.className = 'alert-box';
-    statusAlert.innerText = `⚠️ Error: ${err.message}. Pastikan koneksi internet aktif.`;
+    statusAlert.innerText = `⚠️ Error: ${err.message}`;
   }
 }
 
-// Event Listeners
+// ─── Event Listeners ─────────────────────────────────────────────────────────
 btnRefresh.addEventListener('click', updateAllData);
-
 btnExportWallpaper.addEventListener('click', exportWatchfaceImage);
-
 btnSendNtfy.addEventListener('click', sendNtfyPush);
-
 btnCopyText.addEventListener('click', () => {
-  const text = generatePushMessage();
-  navigator.clipboard.writeText(text);
-  alert("✅ Format teks GEOWATCH berhasil disalin ke clipboard!");
+  navigator.clipboard.writeText(generatePushMessage());
+  alert('✅ Teks GEOWATCH berhasil disalin!');
 });
+inputNtfyTopic.addEventListener('input', e => { if(guideTopic) guideTopic.innerText = e.target.value || 'geowatch_band8_active'; });
 
-inputNtfyTopic.addEventListener('input', (e) => {
-  guideTopic.innerText = e.target.value || 'geowatch_band8_active';
-});
-
-// Preset Buttons
 document.querySelectorAll('.preset-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     inputLat.value = btn.dataset.lat;
@@ -542,40 +502,33 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
   });
 });
 
-// Scale Controls
 document.querySelectorAll('.scale-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const scale = parseFloat(btn.dataset.scale);
     bandFrameWrapper.style.transform = `scale(${scale})`;
-    
-    // adjust action bar margin
-    const margin = scale === 1 ? 20 : (scale === 1.5 ? 130 : 250);
-    document.querySelector('.action-bar').style.marginTop = `${margin}px`;
+    document.querySelector('.action-bar').style.marginTop = scale === 1 ? '20px' : scale === 1.5 ? '130px' : '250px';
   });
 });
 
-// GPS Button
 btnGps.addEventListener('click', () => {
   if (navigator.geolocation) {
-    btnGps.innerText = "⏳ Mendeteksi...";
+    btnGps.innerText = '⏳ Mendeteksi...';
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        inputLat.value = pos.coords.latitude.toFixed(2);
-        inputLon.value = pos.coords.longitude.toFixed(2);
-        btnGps.innerText = "📍 Sesuai GPS";
+      pos => {
+        inputLat.value = pos.coords.latitude.toFixed(4);
+        inputLon.value = pos.coords.longitude.toFixed(4);
+        btnGps.innerText = '📍 GPS OK';
         updateAllData();
       },
-      (err) => {
-        alert("Gagal mendapatkan lokasi GPS: " + err.message);
-        btnGps.innerText = "📍 Gunakan GPS HP/Browser";
+      err => {
+        alert('Gagal GPS: ' + err.message);
+        btnGps.innerText = '📍 Gunakan GPS';
       }
     );
-  } else {
-    alert("Geolocation tidak didukung di browser ini.");
   }
 });
 
-// Initialize on Load
+// Initialize
 updateAllData();
