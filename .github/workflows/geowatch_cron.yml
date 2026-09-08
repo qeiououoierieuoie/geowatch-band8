@@ -5,6 +5,8 @@ on:
     # Berjalan otomatis setiap 5 menit nonstop di cloud GitHub
     - cron: '*/5 * * * *'
   workflow_dispatch: # Tombol untuk memicu manual kapan saja
+  repository_dispatch: # Webhook API eksternal (cron-job.org)
+    types: [geowatch_trigger]
 
 jobs:
   geowatch-job:
