@@ -358,11 +358,13 @@ function generatePushMessage() {
   return msg.trim();
 }
 
-// ─── Export 172x320 Wallpaper PNG ───────────────────────────────────────────
+// ─── Export 172x320 Wallpaper PNG (Disesuaikan untuk Custom Photo Watch Face Mi Fitness) ───
 function exportWatchfaceImage() {
   const canvas = document.getElementById('exportCanvas');
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#000000';
+
+  // Background hitam pekat AMOLED/TFT
+  ctx.fillStyle = '#05070a';
   ctx.fillRect(0, 0, 172, 320);
 
   const now = new Date();
@@ -374,90 +376,133 @@ function exportWatchfaceImage() {
 
   const w = currentWeatherData || { temp:29.4, humidity:74, wind:8.2, aqi:42, pm25:18.4, pm10:31.2, uv:0 };
   const eqs = currentEarthquakes.length ? currentEarthquakes : [{mag:'M 4.8', location:'Indonesia', distance:423}];
-  const vols = currentVolcanoes.length ? currentVolcanoes : [{name:'Merapi', level:'Siaga (III)', distance:380}];
+  const vols = currentVolcanoes.length ? currentVolcanoes : [{name:'Merapi', level:'Siaga', distance:380}];
   const ts = currentTsunamiWarnings;
 
-  let y = 18;
+  const eq = eqs[0] || {mag:'-', location:'-', distance:'-'};
+  const vo = vols[0] || {name:'-', level:'Normal', distance:'-'};
 
-  // Clock + Date
-  ctx.font = 'bold 18px monospace'; ctx.fillStyle = '#ffffff';
-  ctx.fillText(`${hh}:${mm}`, 8, y);
-  ctx.font = 'bold 8px system-ui'; ctx.fillStyle = '#60a5fa';
-  ctx.fillText(dayStr, 76, y - 2);
+  // Header Banner GEOWATCH
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(6, 8, 160, 24);
+  ctx.strokeStyle = '#1e293b';
+  ctx.strokeRect(6, 8, 160, 24);
 
-  y += 6;
-  ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(8, y); ctx.lineTo(164, y); ctx.stroke();
+  ctx.font = 'bold 11px system-ui, sans-serif';
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillText('GEOWATCH SYSTEM', 12, 24);
+  ctx.font = 'bold 9px monospace';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(`${hh}:${mm}`, 134, 24);
 
-  // Title
-  y += 13;
-  ctx.font = 'bold 10px system-ui'; ctx.fillStyle = '#ffffff';
-  ctx.fillText('🌍  GEOWATCH', 8, y);
-  y += 12;
-  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#f3f4f6';
-  ctx.fillText(`📍 ${currentCityName.substring(0,18)}`, 8, y);
-  y += 10;
-  ctx.font = '7.5px monospace'; ctx.fillStyle = '#9ca3af';
-  ctx.fillText(`${currentLat.toFixed(2)}, ${currentLon.toFixed(2)}`, 20, y);
+  // Area Lokasi
+  ctx.font = 'bold 10px system-ui, sans-serif';
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillText(currentCityName.substring(0, 22), 8, 46);
+  ctx.font = '8px monospace';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText(`${currentLat.toFixed(2)}, ${currentLon.toFixed(2)} | ${dayStr}`, 8, 57);
 
-  // Weather
-  y += 14;
-  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#e5e7eb';
-  ctx.fillText('🌤️ WEATHER', 8, y);
-  ctx.font = '8px system-ui';
-  y += 11; ctx.fillStyle='#9ca3af'; ctx.fillText('Temperature:',10,y); ctx.fillStyle='#fff'; ctx.fillText(`${w.temp.toFixed(1)} °C`,100,y);
-  y += 10; ctx.fillStyle='#9ca3af'; ctx.fillText('Humidity:',10,y);    ctx.fillStyle='#fff'; ctx.fillText(`${w.humidity}%`,100,y);
-  y += 10; ctx.fillStyle='#9ca3af'; ctx.fillText('Wind:',10,y);        ctx.fillStyle='#fff'; ctx.fillText(`${w.wind} km/h`,100,y);
+  // Garis Pembatas
+  ctx.strokeStyle = '#1e293b';
+  ctx.beginPath(); ctx.moveTo(8, 64); ctx.lineTo(164, 64); ctx.stroke();
 
-  // AQI
-  y += 13;
-  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#e5e7eb';
-  ctx.fillText('🌫️ AIR QUALITY', 8, y);
-  ctx.font = '8px system-ui';
-  const aqiColor = w.aqi<=50?'#4ade80':w.aqi<=100?'#facc15':'#f87171';
-  y += 11; ctx.fillStyle='#9ca3af'; ctx.fillText('AQI:',10,y); ctx.fillStyle=aqiColor; ctx.fillText(`${w.aqi}`,100,y);
-  y += 10; ctx.fillStyle='#9ca3af'; ctx.fillText('PM2.5:',10,y); ctx.fillStyle='#fff'; ctx.fillText(`${w.pm25} µg/m³`,78,y);
-  y += 10; ctx.fillStyle='#9ca3af'; ctx.fillText('PM10:',10,y);  ctx.fillStyle='#fff'; ctx.fillText(`${w.pm10} µg/m³`,78,y);
-  y += 10; ctx.fillStyle='#9ca3af'; ctx.fillText('UV:',10,y);   ctx.fillStyle='#fff'; ctx.fillText(`${w.uv}`,100,y);
+  let y = 78;
 
-  // Earthquakes
-  y += 13;
-  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#e5e7eb';
-  ctx.fillText('🌋 NEAREST EARTHQUAKES', 8, y);
-  ctx.font = '7.5px system-ui';
-  eqs.slice(0,2).forEach((eq,i) => {
-    y += 10; ctx.fillStyle='#f87171'; ctx.fillText(`${i+1}. ${eq.mag}`,10,y);
-    y += 9;  ctx.fillStyle='#d1d5db'; ctx.fillText(`${eq.location.substring(0,18)}`,10,y);
-    y += 9;  ctx.fillStyle='#9ca3af'; ctx.fillText(`Jarak: ${eq.distance} km`,10,y);
-  });
+  // Box 1: CUACA (Weather)
+  ctx.fillStyle = '#0d131f';
+  ctx.fillRect(6, y - 11, 160, 36);
+  ctx.strokeStyle = '#1e293b';
+  ctx.strokeRect(6, y - 11, 160, 36);
 
-  // Volcanoes
-  y += 12;
-  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#e5e7eb';
-  ctx.fillText('🗻 VOLCANO ACTIVITY', 8, y);
-  ctx.font = '7.5px system-ui';
-  vols.slice(0,2).forEach((v,i) => {
-    y += 10; ctx.fillStyle='#fb923c'; ctx.fillText(`${i+1}. ${v.name}`,10,y);
-    y += 9;  ctx.fillStyle='#d1d5db'; ctx.fillText(`${v.level}`,10,y);
-    y += 9;  ctx.fillStyle='#9ca3af'; ctx.fillText(`Jarak: ${v.distance} km`,10,y);
-  });
+  ctx.font = 'bold 9px system-ui, sans-serif';
+  ctx.fillStyle = '#60a5fa';
+  ctx.fillText('CUACA & SUHU', 12, y);
+  ctx.font = 'bold 13px system-ui, sans-serif';
+  ctx.fillStyle = '#facc15';
+  ctx.fillText(`${w.temp.toFixed(1)}°C`, 114, y + 2);
 
-  // Tsunami
-  y += 12;
-  ctx.font = 'bold 8.5px system-ui'; ctx.fillStyle = '#e5e7eb';
-  ctx.fillText('🌊 TSUNAMI WARNING', 8, y);
-  y += 11;
-  ctx.font = '8px system-ui';
-  if (ts.length > 0) {
-    ctx.fillStyle = '#f87171';
-    ctx.fillText(`⚠️ ${ts.length} PERINGATAN AKTIF!`, 10, y);
-  } else {
-    ctx.fillStyle = '#4ade80';
-    ctx.fillText('✅ AMAN - Tidak ada peringatan', 10, y);
-  }
+  ctx.font = '8px system-ui, sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(`Lembap: ${w.humidity}%  |  Angin: ${w.wind} km/h`, 12, y + 16);
+
+  y += 43;
+
+  // Box 2: KUALITAS UDARA (AQI)
+  ctx.fillStyle = '#0d131f';
+  ctx.fillRect(6, y - 11, 160, 36);
+  ctx.strokeStyle = '#1e293b';
+  ctx.strokeRect(6, y - 11, 160, 36);
+
+  ctx.font = 'bold 9px system-ui, sans-serif';
+  ctx.fillStyle = '#34d399';
+  ctx.fillText('KUALITAS UDARA', 12, y);
+
+  const aqiColor = w.aqi<=50?'#4ade80':w.aqi<=100?'#facc15':w.aqi<=150?'#fb923c':'#f87171';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillStyle = aqiColor;
+  ctx.fillText(`AQI ${w.aqi}`, 118, y + 2);
+
+  ctx.font = '8px system-ui, sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(`PM2.5: ${w.pm25}  |  UV: ${w.uv}`, 12, y + 16);
+
+  y += 43;
+
+  // Box 3: GEMPA TERDEKAT (Earthquake)
+  ctx.fillStyle = '#0d131f';
+  ctx.fillRect(6, y - 11, 160, 42);
+  ctx.strokeStyle = '#331e1e';
+  ctx.strokeRect(6, y - 11, 160, 42);
+
+  ctx.font = 'bold 9px system-ui, sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.fillText('GEMPA TERDEKAT', 12, y);
+  ctx.font = 'bold 10px system-ui, sans-serif';
+  ctx.fillText(eq.mag, 126, y);
+
+  ctx.font = '8px system-ui, sans-serif';
+  ctx.fillStyle = '#e2e8f0';
+  ctx.fillText(eq.location.substring(0, 24), 12, y + 14);
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(`Jarak: ${eq.distance} km`, 12, y + 25);
+
+  y += 49;
+
+  // Box 4: GUNUNG BERAPI (Volcano)
+  ctx.fillStyle = '#0d131f';
+  ctx.fillRect(6, y - 11, 160, 40);
+  ctx.strokeStyle = '#332418';
+  ctx.strokeRect(6, y - 11, 160, 40);
+
+  ctx.font = 'bold 9px system-ui, sans-serif';
+  ctx.fillStyle = '#fb923c';
+  ctx.fillText('GUNUNG BERAPI', 12, y);
+  ctx.font = 'bold 8.5px system-ui, sans-serif';
+  ctx.fillStyle = '#fdba74';
+  ctx.fillText(vo.name, 110, y);
+
+  ctx.font = '8px system-ui, sans-serif';
+  ctx.fillStyle = '#e2e8f0';
+  ctx.fillText(`Status: ${vo.level}`, 12, y + 13);
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(`Jarak: ${vo.distance} km`, 12, y + 24);
+
+  y += 46;
+
+  // Box 5: TSUNAMI
+  const isDanger = ts.length > 0;
+  ctx.fillStyle = isDanger ? '#381212' : '#0d1814';
+  ctx.fillRect(6, y - 9, 160, 22);
+  ctx.strokeStyle = isDanger ? '#ef4444' : '#059669';
+  ctx.strokeRect(6, y - 9, 160, 22);
+
+  ctx.font = 'bold 8.5px system-ui, sans-serif';
+  ctx.fillStyle = isDanger ? '#fca5a5' : '#6ee7b7';
+  ctx.fillText(isDanger ? `TSUNAMI: BAHAYA (${ts[0].region.substring(0,12)})` : 'TSUNAMI: STATUS AMAN', 12, y + 6);
 
   const link = document.createElement('a');
-  link.download = `geowatch_band8_active_${Date.now()}.png`;
+  link.download = `geowatch_watchface_172x320_${Date.now()}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
 }
