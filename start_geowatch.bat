@@ -8,13 +8,13 @@ echo ========================================================
 echo.
 echo [*] Lokasi: Palembang / GPS (-2.99, 104.76)
 echo [*] Topic NTFY: geowatch_band8_active
-echo [*] Update Otomatis: Setiap 30 Menit (1800 detik)
+echo [*] Update Otomatis: Setiap 5 Menit (300 detik)
 echo.
 echo Jangan tutup jendela ini agar pemantauan gempa & cuaca
 echo tetap berjalan otomatis di background!
 echo ========================================================
 echo.
 
-python "%~dp0geowatch_engine.py" --lat -2.99 --lon 104.76 --ntfy geowatch_band8_active --loop --interval 1800
+python "%~dp0geowatch_engine.py" --lat -2.99 --lon 104.76 --ntfy geowatch_band8_active --loop --interval 300
 
 pause

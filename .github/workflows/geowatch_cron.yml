@@ -2,8 +2,8 @@ name: GeoWatch 24/7 Auto Alert
 
 on:
   schedule:
-    # Berjalan otomatis setiap 30 menit nonstop di cloud GitHub
-    - cron: '*/30 * * * *'
+    # Berjalan otomatis setiap 5 menit nonstop di cloud GitHub
+    - cron: '*/5 * * * *'
   workflow_dispatch: # Tombol untuk memicu manual kapan saja
 
 jobs:
